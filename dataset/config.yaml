@@ -1,0 +1,5 @@
+PDBBIND:
+    # Path to PDBbind index directory
+    INDEX: /mnt/scratch/boxiang/projects/pdbbind/v2018/index
+
+    
