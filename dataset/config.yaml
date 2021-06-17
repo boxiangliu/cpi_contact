@@ -2,4 +2,6 @@ PDBBIND:
     # Path to PDBbind index directory
     INDEX: /mnt/scratch/boxiang/projects/pdbbind/v2018/index
 
-    
+DATA:
+    # Path to PDB files:
+    PDB: /mnt/scratch/boxiang/projects/cpi_contact/data/pdb_files/

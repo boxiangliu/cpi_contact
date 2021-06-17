@@ -3,10 +3,10 @@
 
 # Dependencies
 
-We have only tested this package with python 3.8 and with the following dependencies. This package may work with similar configurations but has not been tested yet. 
+We have only tested this package with python 3.8 and with the following dependencies. This package should work with similar configurations but we have not tested yet. 
 ```
 python == 3.8.6
 pyyaml == 5.3.1
-
-
+urllib
+tqdm == 4.56.0
 ```
