@@ -52,7 +52,8 @@ class PdbDownloader(DataDownloader):
         self.uniprot_id_set = self.get_uniprot_id_set(
             self.config, self.pdb_to_uniprot)
 
-        self.fasta = self.download_fasta(self.uniprot_id_set, self.uniprot_url)
+        self.fasta = self.download_fasta(
+            self.config, self.uniprot_id_set, self.uniprot_url)
 
     def get_pdbid_list(self, config):
         pdbid_list = []
