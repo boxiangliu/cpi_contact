@@ -9,7 +9,7 @@ config_fn = sys.argv[1]
 config_fn = "dataset/config.yaml"
 
 
-class DataDownloader():
+class DataUtils():
 
     def __init__(self, config_fn):
         self.config_fn = config_fn
@@ -30,7 +30,7 @@ class DataDownloader():
         return response
 
 
-class PdbDownloader(DataDownloader):
+class DataDownloader(DataUtils):
 
     def __init__(self, config_fn, debug=False):
         super(PdbDownloader, self).__init__(config_fn)
@@ -182,4 +182,27 @@ class PdbDownloader(DataDownloader):
         with open(out_fn, "w") as f:
             f.write(response)
 
-pdb_downloader = PdbDownloader(config_fn, debug=True)
+data_downloader = DataDownloader(config_fn, debug=True)
+
+
+class DataProcessor(DataUtils):
+
+    def __init__(self, config_fn, debug=False):
+        super(DataProcessor, self).__init__(config_fn)
+        self.debug = debug
+
+        self.mol_dict = self.get_mol_dict(self.config)
+
+    def get_mol_dict(self, config):
+        coordinate_fn = config["PDB"]["COORDINATE"]
+        mol_dict = {}
+        mols = Chem.SDMolSupplier(coordinate_fn)
+        for m in mols:
+            if m is None:
+                continue
+            name = m.GetProp("_Name")
+            mol_dict[name] = m
+        sys.stderr.write(f'Number of Molecules in Components-pub.sdf: {len(mol_dict)}\n')
+        return mol_dict
+
+data_processor = DataProcessor(config_fn)
