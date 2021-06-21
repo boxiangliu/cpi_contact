@@ -9,4 +9,6 @@ python == 3.8.6
 pyyaml == 5.3.1
 urllib
 tqdm == 4.56.0
+rdkit == 2019.09.3
+numpy == 1.19.2
 ```
