@@ -1,7 +1,8 @@
 import yaml
 import sys
 import os
-import urllib
+import urllib.parse
+import urllib.request
 from tqdm import tqdm
 from collections import defaultdict
 from rdkit import Chem
