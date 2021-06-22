@@ -158,7 +158,7 @@ class DataDownloader(DataUtils):
                         error += 1
 
         sys.stderr.write(f"Number of downloaded ligands: {n}\n")
-        sys.stderr.write(f"Number of missing ligands: {n}\n")
+        sys.stderr.write(f"Number of missing ligands: {error}\n")
 
     def download_pdb_to_uniprot(self, pdbid_list, uniprot_url):
         '''
