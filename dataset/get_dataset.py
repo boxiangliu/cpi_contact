@@ -144,6 +144,7 @@ class DataDownloader(DataUtils):
             pdbid_list = pdbid_list[:5]
 
         n = 0
+        error = 0
         for pdbid in tqdm(pdbid_list):
             if pdbid in pdbid_to_ligand:
                 ligand = pdbid_to_ligand[pdbid]
@@ -151,12 +152,13 @@ class DataDownloader(DataUtils):
                 out_fn = os.path.join(out_dir, ligand + '_ideal.pdb')
                 if not os.path.exists(out_fn):
                     try:
-                        n += 1
                         urllib.request.urlretrieve(url, out_fn)
+                        n += 1
                     except:
-                        import ipdb; ipdb.set_trace()
+                        error += 1
 
-        sys.stderr.write(f"Number of downloaded complexes: {n}\n")
+        sys.stderr.write(f"Number of downloaded ligands: {n}\n")
+        sys.stderr.write(f"Number of missing ligands: {n}\n")
 
     def download_pdb_to_uniprot(self, pdbid_list, uniprot_url):
         '''
