@@ -1,6 +1,6 @@
 in_dir=$1
 out_dir=$2
-export -f $out_dir
+export $out_dir
 mkdir -p $out_dir
 
 
