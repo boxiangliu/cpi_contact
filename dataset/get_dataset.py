@@ -150,8 +150,11 @@ class DataDownloader(DataUtils):
                 url = url_prefix + ligand + "_ideal.pdb"
                 out_fn = os.path.join(out_dir, ligand + '_ideal.pdb')
                 if not os.path.exists(out_fn):
-                    n += 1
-                    urllib.request.urlretrieve(url, out_fn)
+                    try:
+                        n += 1
+                        urllib.request.urlretrieve(url, out_fn)
+                    except:
+                        import ipdb; ipdb.set_trace()
 
         sys.stderr.write(f"Number of downloaded complexes: {n}\n")
 
