@@ -8,7 +8,7 @@ run_plip(){
 	f=$1
 	base=$(basename $f .pdb)
 	echo $base
-	plipcmd.py -f $f -t --name $out_dir/${base}_output
+	plipcmd.py -f $f -t --out $out_dir --name ${base}_output
 }
 export -f run_plip
 
