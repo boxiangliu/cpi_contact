@@ -5,12 +5,16 @@ import os
 import pickle
 from utils import DataUtils
 import sys
+import warnings
+from Bio.PDB.PDBExceptions import PDBConstructionWarning
+warnings.simplefilter('ignore', PDBConstructionWarning)
+
 
 config_fn = "dataset/config.yaml"
 
 class InteractionParser(DataUtils):
 
-    def __init__(self, config_fn, debug=False, download=True, process=True):
+    def __init__(self, config_fn, debug=False):
         super(InteractionParser, self).__init__(config_fn)
         self.pdbid_list = self.get_pdbid_list(self.config)
         self.pdbid_to_ligand = self.get_pdb_to_ligand(self.config)
@@ -101,7 +105,7 @@ class InteractionParser(DataUtils):
         else:
             sys.stderr.write(f'[ERROR]: Halogen bond ({atom_idx1}, {atom_idx2}) in plip result not in atom_idx_list for (PDB ID: {pdbid}, ligand: {ligand})\n')
             return None
-        return atom_idx_ligand, atom_index_protein
+        return atom_idx_ligand, atom_idx_protein
 
     def get_bonds(self, pdbid, ligand, atom_idx_list):
         '''
@@ -168,7 +172,7 @@ class InteractionParser(DataUtils):
                             return None
                         elif halogen_bonds == "continue":
                             continue
-                        atom_idx_ligand, atom_index_protein = halogen_bonds
+                        atom_idx_ligand, atom_idx_protein = halogen_bonds
                         bond_list.append((bond_type + '_' + str(len(bond_list)), aa_chain, aa_name, aa_id, [atom_idx_protein], ligand_chain, ligand_name, ligand_id, [atom_idx_ligand]))
 
                     else:
@@ -356,16 +360,16 @@ class InteractionParser(DataUtils):
             interaction_dict[pdbid + '_' +
                              ligand]['residue_interact'] = interact_residue_list
 
-        print('interaction_dict', len(interaction_dict))
-        print('no_valid_ligand error', no_valid_ligand)
-        print('no_such_ligand_in_pdb_error', no_such_ligand_in_pdb_error)
-        print('no_interaction_detected_error', no_interaction_detected_error)
-        print('no_ideal_pdb_error', no_ideal_pdb_error)
-        print('empty_atom_interact_list', empty_atom_interact_list)
-        print('protein_seq_error', protein_seq_error)
+        sys.stderr.write(f'Length of interaction_dict: {len(interaction_dict)}\n')
+        sys.stderr.write(f'No ligand found: {no_valid_ligand}\n')
+        sys.stderr.write(f'Ligand not in PDB structure: {no_such_ligand_in_pdb_error}\n')
+        sys.stderr.write(f'No interaction between ligand and protein: {no_interaction_detected_error}\n')
+        sys.stderr.write(f'Ligand not found in Components-pub.sdf: {no_ideal_pdb_error}\n')
+        sys.stderr.write(f'empty_atom_interact_list: {empty_atom_interact_list}\n')
+        sys.stderr.write(f'Interaction residue not found: {protein_seq_error}\n')
 
         out_dir = self.config["DATA"]["WD"]
         with open(os.path.join(out_dir, 'out4_interaction_dict'), 'wb') as f:
             pickle.dump(interaction_dict, f, protocol=0)
 
-interaction_parser = InteractionParser(config_fn, debug=True)
+interaction_parser = InteractionParser(config_fn)
