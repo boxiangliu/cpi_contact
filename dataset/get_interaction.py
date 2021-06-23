@@ -8,7 +8,6 @@ import sys
 
 config_fn = "dataset/config.yaml"
 
-
 class InteractionParser(DataUtils):
 
     def __init__(self, config_fn, debug=False, download=True, process=True):
@@ -148,7 +147,7 @@ class InteractionParser(DataUtils):
                         hydrophobic_interaction = self.parse_hydrophobic_interaction(lines, atom_idx_list, pdbid, ligand)
                         if hydrophobic_interaction is None:
                             return None
-                        atom_idx_ligand, atom_idx_protein = hydrogen_bonds
+                        atom_idx_ligand, atom_idx_protein = hydrophobic_interaction
                         bond_list.append((bond_type + '_' + str(len(bond_list)), aa_chain, aa_name, aa_id, [atom_idx_protein], ligand_chain, ligand_name, ligand_id, [atom_idx_ligand]))
 
                     elif bond_type in ['pi-Stacking', 'pi-Cation Interactions']:
@@ -194,6 +193,19 @@ class InteractionParser(DataUtils):
                 interact_atom_name_list.append(atom_name)
                 interact_bond_type_list.append((atom_name, bond[0]))
         return interact_atom_name_list, interact_bond_type_list
+
+    def get_interact_atom_list(self, name_order_list, atom_name_to_idx_dict, atom_name_to_element_dict, interact_atom_name_list):
+        atom_idx_list = []
+        atom_name_list = []
+        atom_element_list = []
+        atom_interact_list = []
+        for name in name_order_list:
+            idx = atom_name_to_idx_dict[name]
+            atom_idx_list.append(idx)
+            atom_name_list.append(name)
+            atom_element_list.append(atom_name_to_element_dict[name])
+            atom_interact_list.append(int(name in interact_atom_name_list))
+        return atom_idx_list, atom_name_list, atom_element_list, atom_interact_list
 
     def get_mol_from_ligandpdb(self, ligand):
         pdb_dir = self.config["DATA"]["PDB"]
