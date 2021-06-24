@@ -4,6 +4,8 @@ import urllib.request
 import os
 import sys
 
+config_fn = "config.yaml"
+
 class DataUtils():
 
     def __init__(self, config_fn):

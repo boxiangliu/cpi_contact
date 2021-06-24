@@ -4,7 +4,6 @@ import subprocess
 import os
 import sys
 
-config_fn = "dataset/config.yaml"
 
 class Aligner(DataUtils):
 

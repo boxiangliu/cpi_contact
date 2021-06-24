@@ -9,7 +9,6 @@ from rdkit import Chem
 import numpy as np
 from utils import DataUtils
 
-config_fn = "dataset/config.yaml"
 
 class DataDownloader(DataUtils):
 

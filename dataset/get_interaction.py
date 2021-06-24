@@ -10,8 +10,6 @@ from Bio.PDB.PDBExceptions import PDBConstructionWarning
 warnings.simplefilter('ignore', PDBConstructionWarning)
 
 
-config_fn = "dataset/config.yaml"
-
 class InteractionParser(DataUtils):
 
     def __init__(self, config_fn, debug=False):

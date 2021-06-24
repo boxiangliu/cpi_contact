@@ -24,7 +24,6 @@ from utils import DataUtils
 
 # sys.stderr.write(f"{n} sequences processed.\n")
 
-
 class FastaPreparer(DataUtils):
     def __init__(self, config_fn):
         super(FastaPreparer).__init__(config_fn)

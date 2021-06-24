@@ -3,7 +3,6 @@ import os
 import pickle
 import numpy as np
 
-config_fn = "dataset/config.yaml"
 
 class InteractionAdjuster(DataUtils):
 
