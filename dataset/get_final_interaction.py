@@ -216,7 +216,9 @@ class InteractionAdjuster(DataUtils):
         print('count_no_uniprot_map', count_no_uniprot_map)
         print('count_not_in_uniprot_seq_dict',count_not_in_uniprot_seq_dict)
 
-        with open('out7_final_pairwise_interaction_dict','wb') as f:
+        work_dir = self.config["DATA"]["WD"]
+        out_fn = os.path.join(work_dir, "out7_final_pairwise_interaction_dict")
+        with open(out_fn,'wb') as f:
             pickle.dump(interaction_dict_from_pdb_final,f,protocol=0)
 
         return interaction_dict_from_pdb_final
