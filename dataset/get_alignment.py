@@ -64,7 +64,7 @@ class Aligner(DataUtils):
         work_dir = self.config["DATA"]["WD"]
         pyssw_pairwise = os.path.join(sw_dir, "pyssw_pairwise.py")
         out_fn = os.path.join(work_dir, "out6.3_pdb_align.txt")
-        command = f"python {pyssw_pairwise} -l {sw_dir} -c -p {query_fn} {target_fn} > {out_fn}"
+        command = f"python2 {pyssw_pairwise} -l {sw_dir} -c -p {query_fn} {target_fn} > {out_fn}"
         sys.stderr.write(f"[COMMAND]: {command}\n")
         subprocess.run(command, shell=True)
 
