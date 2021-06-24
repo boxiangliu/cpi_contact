@@ -7,7 +7,7 @@ from tqdm import tqdm
 from collections import defaultdict
 from rdkit import Chem
 import numpy as np
-from utils import DataUtils
+from utils import DataUtils, config_fn
 
 
 class DataDownloader(DataUtils):

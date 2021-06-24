@@ -3,7 +3,7 @@ from Bio.PDB import PDBParser, Selection
 from Bio.PDB.Polypeptide import three_to_one
 import os
 import pickle
-from utils import DataUtils
+from utils import DataUtils, config_fn
 import sys
 import warnings
 from Bio.PDB.PDBExceptions import PDBConstructionWarning

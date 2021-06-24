@@ -1,4 +1,4 @@
-from utils import DataUtils
+from utils import DataUtils, config_fn
 import os
 import pickle
 import numpy as np

@@ -1,4 +1,4 @@
-from utils import DataUtils
+from utils import DataUtils, config_fn
 import pickle
 import subprocess
 import os
