@@ -23,3 +23,6 @@ SRC:
 HHBLITS:
     # Path to HHBlits database
     DATABASE: /mnt/home/vincent/protein_folding/data/UniRef30_2020_02
+
+SLURM:
+    QUEUE: TitanXx8,TitanXx8_mlong,TitanXx8_slong,M40x8_slong,M40x8_mlong,M40x8,P100,1080Ti,2080Ti_mlong,2080Ti,CPUx40

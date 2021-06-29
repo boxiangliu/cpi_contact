@@ -4,6 +4,7 @@ import os
 from utils import DataUtils, config_fn
 from tqdm import tqdm
 import glob
+import time
 
 # in_fn = sys.argv[1]
 # out_dir = sys.argv[2]
@@ -29,11 +30,13 @@ import glob
 
 class FastaPreparer(DataUtils):
 
-    def __init__(self, config_fn):
+    def __init__(self, config_fn, debug=False):
         super(FastaPreparer, self).__init__(config_fn)
         self.interaction_dict = self.read_interaction_dict()
         self.prepare_fasta()
-        self.hhblits_commands = get_hhblits_commands()
+        self.hhblits_commands = self.get_hhblits_commands()
+        self.command_list = self.write_hhblits_commands()
+        self.run_hhblits_commands()
 
     def read_interaction_dict(self):
         work_dir = self.config["DATA"]["WD"]
@@ -53,7 +56,10 @@ class FastaPreparer(DataUtils):
             uniprot_id = v["uniprot_id"]
             uniprot_seq = v["uniprot_seq"]
             seq_id = f"{pdb_id}_{uniprot_id}"
-            with open(os.path.join(out_dir, seq_id + ".fasta"), "w") as f:
+            fasta_fn = os.path.join(out_dir, seq_id + ".fasta")
+            if os.path.exists(fasta_fn): 
+                continue
+            with open(fasta_fn, "w") as f:
                 f.write(f">{seq_id}\n")
                 f.write(uniprot_seq)
 
@@ -68,4 +74,47 @@ class FastaPreparer(DataUtils):
             command = f"hhblits -i {fasta_fn} -o {out_dir}/{base}.hhr -oa3m {out_dir}/{base}.a3m -d {hhblits_database}"
             commands.append(command)
         return commands
-fasta_preparer = FastaPreparer(config_fn)
+
+    def write_hhblits_commands(self):
+        hhblits_commands = self.hhblits_commands
+        chunks = 800
+        per_file = len(hhblits_commands) // chunks + 1
+        out_dir = self.config["DATA"]["MSA"]
+
+        i = 0
+        file_content = []
+        command_list = []
+        for command in hhblits_commands:
+            if len(file_content) < per_file:
+                file_content.append(command)
+            else:
+                fn = os.path.join(out_dir, f"hhblits_commands_{i:03}")
+                command_list.append(fn)
+                with open(fn, "w") as f:
+                    f.write("\n".join(file_content) + "\n")
+                i += 1
+                file_content = [command]
+
+        i += 1
+        fn = os.path.join(out_dir, f"hhblits_commands_{i:03}")
+        command_list.append(fn)
+        with open(fn, "w") as f:
+            f.write("\n".join(file_content) + "\n")
+ 
+        sys.stderr.write(f"Number of hhblits commands: {i}\n")
+
+        return command_list
+
+    def run_hhblits_commands(self):
+        queues = self.config["SLURM"]["QUEUE"]
+        if self.debug:
+            self.command_list = self.command_list[:2]
+
+        for f in self.command_list:
+            time.sleep(1)
+            base = os.path.basename(f)
+            command = f"sbatch -p {queues} --job-name {base} --wrap 'bash {f}'"
+            sys.stderr.write(command + "\n")
+            subprocess.run(command, shell=True)
+
+fasta_preparer = FastaPreparer(config_fn, debug=True)
