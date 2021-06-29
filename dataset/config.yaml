@@ -14,12 +14,7 @@ DATA:
     # Path to PLIP results:
     PLIP: /mnt/scratch/boxiang/projects/cpi_contact/data/plip_results/
     # Path to MSA:
-    MSA: /mnt/scratch/boxiang/projects/cpi_contact/data/MSA/
-
+    MSA: /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA/
 SRC:
     # Path to Smith-Waterman alignment source code
     SW: /mnt/scratch/boxiang/projects/cpi_contact/scripts/dataset/smith-waterman-src/
-
-HHBLITS:
-    # Path to HHBlits database
-    DATABASE: /mnt/home/vincent/protein_folding/data/UniRef30_2020_02

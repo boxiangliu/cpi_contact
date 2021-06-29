@@ -3,6 +3,7 @@ import pickle
 import os
 from utils import DataUtils, config_fn
 from tqdm import tqdm
+import glob
 
 # in_fn = sys.argv[1]
 # out_dir = sys.argv[2]
@@ -32,6 +33,7 @@ class FastaPreparer(DataUtils):
         super(FastaPreparer, self).__init__(config_fn)
         self.interaction_dict = self.read_interaction_dict()
         self.prepare_fasta()
+        self.hhblits_commands = get_hhblits_commands()
 
     def read_interaction_dict(self):
         work_dir = self.config["DATA"]["WD"]
@@ -42,6 +44,8 @@ class FastaPreparer(DataUtils):
 
     def prepare_fasta(self):
         out_dir = self.config["DATA"]["MSA"]
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         n_files = 0
         for k, v in tqdm(self.interaction_dict.items()):
             n_files += 1
@@ -55,4 +59,13 @@ class FastaPreparer(DataUtils):
 
         sys.stderr.write(f"Number of FASTA files: {n_files}\n")
 
+    def get_hhblits_commands(self):
+        out_dir = self.config["DATA"]["MSA"]
+        hhblits_database = self.config["HHBLITS"]["DATABASE"]
+        commands = []
+        for fasta_fn in glob.glob(os.path.join(out_dir, "*.fasta")):
+            base = os.path.basename(fasta_fn).replace(".fasta", "")
+            command = f"hhblits -i {fasta_fn} -o {out_dir}/{base}.hhr -oa3m {out_dir}/{base}.a3m -d {hhblits_database}"
+            commands.append(command)
+        return commands
 fasta_preparer = FastaPreparer(config_fn)
