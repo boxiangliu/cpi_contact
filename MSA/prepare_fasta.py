@@ -13,6 +13,8 @@ from typing import List, Tuple
 import string
 from multiprocessing import Pool
 import torch
+from collections import Counter
+
 
 class FastaPreparer(DataUtils):
 
@@ -44,7 +46,7 @@ class FastaPreparer(DataUtils):
             uniprot_seq = v["uniprot_seq"]
             seq_id = f"{pdb_id}_{uniprot_id}"
             fasta_fn = os.path.join(out_dir, seq_id + ".fasta")
-            if os.path.exists(fasta_fn): 
+            if os.path.exists(fasta_fn):
                 continue
             with open(fasta_fn, "w") as f:
                 f.write(f">{seq_id}\n")
@@ -87,7 +89,7 @@ class FastaPreparer(DataUtils):
         command_list.append(fn)
         with open(fn, "w") as f:
             f.write("\n".join(file_content) + "\n")
- 
+
         sys.stderr.write(f"Number of hhblits commands: {i}\n")
 
         return command_list
@@ -106,12 +108,14 @@ class FastaPreparer(DataUtils):
 
 
 class MSAUtils(DataUtils):
+
     def __init__(self, config):
         super(MSAUtils, self).__init__(config_fn)
 
     @property
     def translation(self):
-        # This is an efficient way to delete lowercase characters and insertion characters from a string
+        # This is an efficient way to delete lowercase characters and insertion
+        # characters from a string
         deletekeys = dict.fromkeys(string.ascii_lowercase)
         deletekeys["."] = None
         deletekeys["*"] = None
@@ -134,6 +138,7 @@ class MSAUtils(DataUtils):
 
 
 class MSAFeatureExtractor(MSAUtils):
+
     def __init__(self, config, model):
         super(MSAFeatureExtractor, self).__init__(config_fn)
         self.model = model
@@ -158,41 +163,58 @@ class MSAFeatureExtractor(MSAUtils):
             msa_data = [self.read_msa(fn, 64) for fn in a3m_fn]
 
         id_ = os.path.basename(a3m_fn).replace(".a3m", "")
-        msa_batch_labels, msa_batch_strs, msa_batch_tokens = self.converter(msa_data)
+        msa_batch_labels, msa_batch_strs, msa_batch_tokens = self.converter(
+            msa_data)
         # Remove batch with lengths bigger than 1024:
         if msa_batch_tokens.shape[2] > 1024:
             sys.stderr.write(f"{id_} is longer than 1024.\n")
             return None
-        results = self.model.forward(msa_batch_tokens, need_head_weights=True, repr_layers=[12])
+        results = self.model.forward(
+            msa_batch_tokens, need_head_weights=True, repr_layers=[12])
         return {"id": id_, "representations": results["representations"][12], "row_attentions": results["row_attentions"][:, -1, :, :, :]}
 
     def extract_and_save(self, a3m_fn):
         out_dir = self.config["DATA"]["MSA_FEATURES"]
-        results = self.extract_from_msa(a3m_fn)
-        if results == None:
-            return 
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
-        out_fn = os.path.join(out_dir, results["id"] + ".pt")
-        if not os.path.exists(out_fn):
-            sys.stderr.write(f"{out_fn} saved to disk.\n")
-            torch.save(results, out_fn)
-        else:
-            sys.stderr.write(f"{out_fn} already on disk.\n")
+        id_ = os.path.basename(a3m_fn).replace(".a3m", "")
+        out_fn = os.path.join(out_dir, id_ + ".pt")
 
-def main():
+        if os.path.exists(out_fn):
+            sys.stderr.write(f"{out_fn} already on disk.\n")
+            return "already on disk"
+        else:
+            results = self.extract_from_msa(a3m_fn)
+            if results == None:
+                return "too long"
+            torch.save(results, out_fn)
+            sys.stderr.write(f"{out_fn} saved to disk.\n")
+            return "saved"
+
+
+def main(debug=False):
     # fasta_preparer = FastaPreparer(config_fn)
-    msa_feature_extractor = MSAFeatureExtractor(config_fn, "esm_msa1_t12_100M_UR50S")
+    msa_feature_extractor = MSAFeatureExtractor(
+        config_fn, "esm_msa1_t12_100M_UR50S")
 
     msa_dir = msa_feature_extractor.config["DATA"]["MSA"]
     fn_list = []
     for fn in glob.glob(os.path.join(msa_dir, "*.a3m")):
         fn_list.append(fn)
 
-    # with Pool(38) as p:
-    #     p.map(msa_feature_extractor.extract_and_save, fn_list)
+    if debug:
+        fn_list = fn_list[:5]
+    sys.stderr.write(f"Files read: {len(fn_list)}\n")
 
+    status = Counter()
     for fn in fn_list:
-        msa_feature_extractor.extract_and_save(fn)
+        res = msa_feature_extractor.extract_and_save(fn)
+        status[res] += 1
+        status["n"] += 1
 
-main()
+    sys.stderr.write(f"Total proteins processed: {status['n']}\n")
+    sys.stderr.write(f"Protein > 1024 residues: {status['too long']}\n")
+    sys.stderr.write(f"Results saved to disk: {status['saved']}\n")
+    sys.stderr.write(f"Results already on disk: {status['already on disk']}\n")
+
+    return status
+
+status = main(debug=False)
