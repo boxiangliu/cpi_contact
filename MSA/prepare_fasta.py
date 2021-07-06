@@ -12,7 +12,7 @@ import itertools
 from typing import List, Tuple
 import string
 from multiprocessing import Pool
-
+import torch
 
 class FastaPreparer(DataUtils):
 
@@ -167,28 +167,32 @@ class MSAFeatureExtractor(MSAUtils):
         return {"id": id_, "representations": results["representations"][12], "row_attentions": results["row_attentions"][:, -1, :, :, :]}
 
     def extract_and_save(self, a3m_fn):
-        out_dir = self.config["MSA_FEATURES"]
+        out_dir = self.config["DATA"]["MSA_FEATURES"]
         results = self.extract_from_msa(a3m_fn)
         if results == None:
             return 
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
-        torch.save(results, os.path.join(out_dir, results["id"] + ".pt"))
+        out_fn = os.path.join(out_dir, results["id"] + ".pt")
+        if not os.path.exists(out_fn):
+            sys.stderr.write(f"{out_fn} saved to disk.\n")
+            torch.save(results, out_fn)
+        else:
+            sys.stderr.write(f"{out_fn} already on disk.\n")
 
+def main():
+    # fasta_preparer = FastaPreparer(config_fn)
+    msa_feature_extractor = MSAFeatureExtractor(config_fn, "esm_msa1_t12_100M_UR50S")
 
-# fasta_preparer = FastaPreparer(config_fn)
-msa_feature_extractor = MSAFeatureExtractor(config_fn, "esm_msa1_t12_100M_UR50S")
+    msa_dir = msa_feature_extractor.config["DATA"]["MSA"]
+    fn_list = []
+    for fn in glob.glob(os.path.join(msa_dir, "*.a3m")):
+        fn_list.append(fn)
 
-results = msa_feature_extractor.extract_from_msa('/mnt/scratch/boxiang/projects/esm/examples/1a3a_1_A.a3m')
-results = msa_feature_extractor.extract_from_msa('/mnt/scratch/boxiang/projects/cpi_contact/data/MSA/4r1y_P08581.a3m')
-msa_feature_extractor.extract_and_save('/mnt/scratch/boxiang/projects/esm/examples/1a3a_1_A.a3m')
-msa_feature_extractor.extract_and_save('/mnt/scratch/boxiang/projects/cpi_contact/data/MSA/4r1y_P08581.a3m')
+    # with Pool(38) as p:
+    #     p.map(msa_feature_extractor.extract_and_save, fn_list)
 
-msa_dir = msa_feature_extractor.config["DATA"]["MSA"]
+    for fn in fn_list:
+        msa_feature_extractor.extract_and_save(fn)
 
-fn_list = []
-for fn in glob.glob(os.path.join(msa_dir, "*.a3m")):
-    fn_list.append(fn)
-
-with Pool(38) as p:
-    p.map(msa_feature_extractor.extract_and_save, fn_list)
+main()
