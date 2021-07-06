@@ -15,6 +15,8 @@ DATA:
     PLIP: /mnt/scratch/boxiang/projects/cpi_contact/data/plip_results/
     # Path to MSA:
     MSA: /mnt/scratch/boxiang/projects/cpi_contact/data/MSA/
+    # Path to MSA features:
+    MSA_FEATURES: /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/
 
 SRC:
     # Path to Smith-Waterman alignment source code
@@ -26,3 +28,4 @@ HHBLITS:
 
 SLURM:
     QUEUE: TitanXx8,TitanXx8_mlong,TitanXx8_slong,M40x8_slong,M40x8_mlong,M40x8,P100,1080Ti,2080Ti_mlong,2080Ti,CPUx40
+

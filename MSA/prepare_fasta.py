@@ -5,33 +5,20 @@ from utils import DataUtils, config_fn
 from tqdm import tqdm
 import glob
 import time
-
-# in_fn = sys.argv[1]
-# out_dir = sys.argv[2]
-# if not os.path.exists(out_dir):
-#     os.makedirs(out_dir)
-
-# with open(in_fn, "rb") as f:
-#     interaction_dict = pkl.load(f)
-
-# n = 0
-# for k, v in interaction_dict.items():
-#     n += 1
-#     uniprot_id = v["uniprot_id"]
-#     pdb_id = k
-#     uniprot_seq = v["uniprot_seq"]
-#     seq_id = f"{pdb_id}_{uniprot_id}"
-#     with open(os.path.join(out_dir, f"{seq_id}.fasta"), "w") as f:
-#         f.write(f">{seq_id}\n")
-#         f.write(uniprot_seq)
-
-# sys.stderr.write(f"{n} sequences processed.\n")
+import subprocess
+import esm
+from Bio import SeqIO
+import itertools
+from typing import List, Tuple
+import string
+from multiprocessing import Pool
 
 
 class FastaPreparer(DataUtils):
 
     def __init__(self, config_fn, debug=False):
         super(FastaPreparer, self).__init__(config_fn)
+        self.debug = debug
         self.interaction_dict = self.read_interaction_dict()
         self.prepare_fasta()
         self.hhblits_commands = self.get_hhblits_commands()
@@ -117,4 +104,91 @@ class FastaPreparer(DataUtils):
             sys.stderr.write(command + "\n")
             subprocess.run(command, shell=True)
 
-fasta_preparer = FastaPreparer(config_fn, debug=True)
+
+class MSAUtils(DataUtils):
+    def __init__(self, config):
+        super(MSAUtils, self).__init__(config_fn)
+
+    @property
+    def translation(self):
+        # This is an efficient way to delete lowercase characters and insertion characters from a string
+        deletekeys = dict.fromkeys(string.ascii_lowercase)
+        deletekeys["."] = None
+        deletekeys["*"] = None
+        translation = str.maketrans(deletekeys)
+        return translation
+
+    def read_sequence(self, filename: str) -> Tuple[str, str]:
+        """ Reads the first (reference) sequences from a fasta or MSA file."""
+        record = next(SeqIO.parse(filename, "fasta"))
+        return record.description, str(record.seq)
+
+    def remove_insertions(self, sequence: str) -> str:
+        """ Removes any insertions into the sequence. Needed to load aligned sequences in an MSA. """
+        return sequence.translate(self.translation)
+
+    def read_msa(self, filename: str, nseq: int) -> List[Tuple[str, str]]:
+        """ Reads the first nseq sequences from an MSA file, automatically removes insertions."""
+        return [(record.description, self.remove_insertions(str(record.seq)))
+                for record in itertools.islice(SeqIO.parse(filename, "fasta"), nseq)]
+
+
+class MSAFeatureExtractor(MSAUtils):
+    def __init__(self, config, model):
+        super(MSAFeatureExtractor, self).__init__(config_fn)
+        self.model = model
+        self.model, self.alphabet, self.converter = self.get_model(model)
+
+    def get_model(self, model, eval=False):
+        if model == "esm_msa1_t12_100M_UR50S":
+            model, alphabet = esm.pretrained.esm_msa1_t12_100M_UR50S()
+        elif model == "esm1b_t33_650M_UR50S":
+            model, alphabet = esm.pretrained.esm1b_t33_650M_UR50S()
+        else:
+            raise ValueError(f"{model} not implemented!")
+        if eval:
+            model = model.eval()
+
+        return model, alphabet, alphabet.get_batch_converter()
+
+    def extract_from_msa(self, a3m_fn):
+        if isinstance(a3m_fn, str):
+            msa_data = [self.read_msa(a3m_fn, 64)]
+        elif isinstance(a3m_fn, list):
+            msa_data = [self.read_msa(fn, 64) for fn in a3m_fn]
+
+        id_ = os.path.basename(a3m_fn).replace(".a3m", "")
+        msa_batch_labels, msa_batch_strs, msa_batch_tokens = self.converter(msa_data)
+        # Remove batch with lengths bigger than 1024:
+        if msa_batch_tokens.shape[2] > 1024:
+            sys.stderr.write(f"{id_} is longer than 1024.\n")
+            return None
+        results = self.model.forward(msa_batch_tokens, need_head_weights=True, repr_layers=[12])
+        return {"id": id_, "representations": results["representations"][12], "row_attentions": results["row_attentions"][:, -1, :, :, :]}
+
+    def extract_and_save(self, a3m_fn):
+        out_dir = self.config["MSA_FEATURES"]
+        results = self.extract_from_msa(a3m_fn)
+        if results == None:
+            return 
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        torch.save(results, os.path.join(out_dir, results["id"] + ".pt"))
+
+
+# fasta_preparer = FastaPreparer(config_fn)
+msa_feature_extractor = MSAFeatureExtractor(config_fn, "esm_msa1_t12_100M_UR50S")
+
+results = msa_feature_extractor.extract_from_msa('/mnt/scratch/boxiang/projects/esm/examples/1a3a_1_A.a3m')
+results = msa_feature_extractor.extract_from_msa('/mnt/scratch/boxiang/projects/cpi_contact/data/MSA/4r1y_P08581.a3m')
+msa_feature_extractor.extract_and_save('/mnt/scratch/boxiang/projects/esm/examples/1a3a_1_A.a3m')
+msa_feature_extractor.extract_and_save('/mnt/scratch/boxiang/projects/cpi_contact/data/MSA/4r1y_P08581.a3m')
+
+msa_dir = msa_feature_extractor.config["DATA"]["MSA"]
+
+fn_list = []
+for fn in glob.glob(os.path.join(msa_dir, "*.a3m")):
+    fn_list.append(fn)
+
+with Pool(38) as p:
+    p.map(msa_feature_extractor.extract_and_save, fn_list)
