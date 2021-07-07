@@ -11,10 +11,10 @@ from Bio import SeqIO
 import itertools
 from typing import List, Tuple
 import string
-from multiprocessing import Pool
+import multiprocessing as mp
 import torch
 from collections import Counter
-
+import click
 
 class FastaPreparer(DataUtils):
 
@@ -189,26 +189,35 @@ class MSAFeatureExtractor(MSAUtils):
             sys.stderr.write(f"{out_fn} saved to disk.\n")
             return "saved"
 
-
-def main(debug=False):
+@click.command()
+@click.option("--fn_list", default=None, help="File list")
+@click.option("--debug", default=False, help="Debug")
+def main(fn_list=None, debug=False):
     # fasta_preparer = FastaPreparer(config_fn)
     msa_feature_extractor = MSAFeatureExtractor(
         config_fn, "esm_msa1_t12_100M_UR50S")
 
     msa_dir = msa_feature_extractor.config["DATA"]["MSA"]
-    fn_list = []
-    for fn in glob.glob(os.path.join(msa_dir, "*.a3m")):
-        fn_list.append(fn)
+
+    if fn_list is None:
+        fn_list = []
+        for fn in glob.glob(os.path.join(msa_dir, "*.a3m")):
+            fn_list.append(fn)
+    elif isinstance(fn_list, list):
+        pass
+    elif isinstance(fn_list, str):
+        with open(fn_list) as f:
+            fn_list = f.readlines()
 
     if debug:
         fn_list = fn_list[:5]
     sys.stderr.write(f"Files read: {len(fn_list)}\n")
 
     status = Counter()
+    status['n'] = len(fn_list)
     for fn in fn_list:
         res = msa_feature_extractor.extract_and_save(fn)
         status[res] += 1
-        status["n"] += 1
 
     sys.stderr.write(f"Total proteins processed: {status['n']}\n")
     sys.stderr.write(f"Protein > 1024 residues: {status['too long']}\n")
@@ -217,4 +226,5 @@ def main(debug=False):
 
     return status
 
-status = main(debug=False)
+if __name__ == "__main__":
+    status = main()
