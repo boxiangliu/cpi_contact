@@ -207,7 +207,9 @@ def main(fn_list=None, debug=False):
         pass
     elif isinstance(fn_list, str):
         with open(fn_list) as f:
-            fn_list = f.readlines()
+            fn_list = []
+            for line in f:
+                fn_list.append(line.strip())
 
     if debug:
         fn_list = fn_list[:5]
