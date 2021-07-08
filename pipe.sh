@@ -17,7 +17,6 @@ split -l 100 /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_featur
 queues=M40x8,M40x8_mlong,M40x8_slong
 
 for f in /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list_*; do
-    f=/mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list_aa
     echo $f
     sleep 1
     sbatch -p $queues --job-name $(basename $f) --gres=gpu:1 --cpus-per-task 5 --wrap "python MSA/prepare_fasta.py --fn_list $f"
