@@ -176,6 +176,9 @@ class MSAFeatureExtractor(MSAUtils):
 
     def extract_and_save(self, a3m_fn):
         out_dir = self.config["DATA"]["MSA_FEATURES"]
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
         id_ = os.path.basename(a3m_fn).replace(".a3m", "")
         out_fn = os.path.join(out_dir, id_ + ".pt")
 
