@@ -142,9 +142,9 @@ class MSAFeatureExtractor(MSAUtils):
     def __init__(self, config, model):
         super(MSAFeatureExtractor, self).__init__(config_fn)
         self.model = model
-        self.model, self.alphabet, self.converter = self.get_model(model)
+        self.model, self.alphabet, self.converter = self.get_model(model, eval=True)
 
-    def get_model(self, model, eval=False):
+    def get_model(self, model, eval=True):
         if model == "esm_msa1_t12_100M_UR50S":
             model, alphabet = esm.pretrained.esm_msa1_t12_100M_UR50S()
         elif model == "esm1b_t33_650M_UR50S":
@@ -153,19 +153,20 @@ class MSAFeatureExtractor(MSAUtils):
             raise ValueError(f"{model} not implemented!")
         if eval:
             model = model.eval()
-
+        model = model.cuda()
         return model, alphabet, alphabet.get_batch_converter()
 
     def extract_from_msa(self, a3m_fn):
         if isinstance(a3m_fn, str):
-            msa_data = [self.read_msa(a3m_fn, 64)]
+            msa_data = [self.read_msa(a3m_fn, 16)]
         elif isinstance(a3m_fn, list):
-            msa_data = [self.read_msa(fn, 64) for fn in a3m_fn]
+            msa_data = [self.read_msa(fn, 16) for fn in a3m_fn]
 
         id_ = os.path.basename(a3m_fn).replace(".a3m", "")
         msa_batch_labels, msa_batch_strs, msa_batch_tokens = self.converter(
             msa_data)
         # Remove batch with lengths bigger than 1024:
+        msa_batch_tokens = msa_batch_tokens.cuda()
         if msa_batch_tokens.shape[2] > 1024:
             sys.stderr.write(f"{id_} is longer than 1024.\n")
             return None
@@ -190,7 +191,7 @@ class MSAFeatureExtractor(MSAUtils):
             return "saved"
 
 @click.command()
-@click.option("--fn_list", default=None, help="File list")
+@click.option("--fn_list", default="/mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list_aa", help="File list")
 @click.option("--debug", default=False, help="Debug")
 def main(fn_list=None, debug=False):
     # fasta_preparer = FastaPreparer(config_fn)
@@ -227,6 +228,8 @@ def main(fn_list=None, debug=False):
     sys.stderr.write(f"Results already on disk: {status['already on disk']}\n")
 
     return status
+
+main()
 
 if __name__ == "__main__":
     status = main()

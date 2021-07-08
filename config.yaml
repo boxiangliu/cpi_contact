@@ -16,7 +16,7 @@ DATA:
     # Path to MSA:
     MSA: /mnt/scratch/boxiang/projects/cpi_contact/data/MSA/
     # Path to MSA features:
-    MSA_FEATURES: /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/
+    MSA_FEATURES: /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features_2/
 
 SRC:
     # Path to Smith-Waterman alignment source code
