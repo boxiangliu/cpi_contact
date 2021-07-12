@@ -11,7 +11,7 @@ bash MSA/run_hhblits.sh /mnt/scratch/boxiang/projects/cpi_contact/processed_data
 
 
 ls /mnt/scratch/boxiang/projects/cpi_contact/data/MSA/*a3m > /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list
-split -l 100 /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list fn_list_
+split -l 100 /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list_
 
 # queues=TitanXx8,TitanXx8_mlong,TitanXx8_slong,M40x8_slong,M40x8_mlong,M40x8,P100,1080Ti,2080Ti_mlong,2080Ti,CPUx40
 queues=M40x8,M40x8_mlong,M40x8_slong
