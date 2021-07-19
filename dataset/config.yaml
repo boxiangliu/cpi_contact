@@ -18,3 +18,4 @@ DATA:
 SRC:
     # Path to Smith-Waterman alignment source code
     SW: /mnt/scratch/boxiang/projects/cpi_contact/scripts/dataset/smith-waterman-src/
+

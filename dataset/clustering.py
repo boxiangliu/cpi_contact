@@ -3,8 +3,13 @@ from utils import DataUtils, config_fn, aa_list, elem_list
 import os
 import pickle
 from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit import DataStructs
 from collections import defaultdict
 import numpy as np
+
+def pickle_dump(dictionary, file_name):
+    pickle.dump(dict(dictionary), open(file_name, 'wb'), protocol=0)
 
 class Preprocessor(DataUtils):
     def __init__(self, config_fn, measure="IC50"):
@@ -19,7 +24,7 @@ class Preprocessor(DataUtils):
         self.interaction_dict = self.get_interaction_dict()
         self.pair_info_dict = self.get_pair_info_dict()
         self.get_input()
-
+        self.save_data()
 
     def set_measure(self, measure):
         assert measure in ["IC50", "KIKD"]
@@ -257,20 +262,70 @@ class Preprocessor(DataUtils):
         mol_inputs = self.mol_inputs
         seq_inputs = self.seq_inputs
         MEASURE = self.MEASURE
+        preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
+        if not os.path.exists(preprocessed_dir):
+            os.makedirs(preprocessed_dir)
 
         fa_list, fb_list, anb_list, bnb_list, nbs_mat_list = zip(*mol_inputs)
         data_pack = [np.array(fa_list), np.array(fb_list), np.array(anb_list), np.array(bnb_list), np.array(nbs_mat_list), np.array(seq_inputs), \
         np.array(valid_value_list), np.array(valid_cid_list), np.array(valid_pid_list), np.array(valid_pairwise_mask_list), np.array(valid_pairwise_mat_list)]
         
         # save data
-        with open('../preprocessing/pdbbind_all_combined_input_'+MEASURE, 'wb') as f:
+        with open(os.path.join(preprocessed_dir, 'pdbbind_all_combined_input_'+MEASURE), 'wb') as f:
             pickle.dump(data_pack, f, protocol=0)
         
-        np.save('../preprocessing/wlnn_train_list_'+MEASURE, wlnn_train_list)
+        np.save(os.path.join(preprocessed_dir, 'wlnn_train_list_'+MEASURE), wlnn_train_list)
         
-        pickle_dump(atom_dict, '../preprocessing/pdbbind_all_atom_dict_'+MEASURE)
-        pickle_dump(bond_dict, '../preprocessing/pdbbind_all_bond_dict_'+MEASURE)
-        pickle_dump(word_dict, '../preprocessing/pdbbind_all_word_dict_'+MEASURE)
+        pickle_dump(self.atom_dict, os.path.join(preprocessed_dir, 'pdbbind_all_atom_dict_'+MEASURE))
+        pickle_dump(self.bond_dict, os.path.join(preprocessed_dir, 'pdbbind_all_bond_dict_'+MEASURE))
+        pickle_dump(self.word_dict, os.path.join(preprocessed_dir, 'pdbbind_all_word_dict_'+MEASURE))
+
+
+    def get_fps(self, mol_list):
+        fps = []
+        for mol in mol_list:
+            fp = AllChem.GetMorganFingerprintAsBitVect(mol,2,nBits=1024,useChirality=True)
+            fps.append(fp)
+        return fps
+
+    def calculate_sims(self, fps1, fps2, simtype='tanimoto'):
+        sim_mat = np.zeros((len(fps1),len(fps2)))
+        for i in range(len(fps1)):
+            fp_i = fps1[i]
+            if simtype == 'tanimoto':
+                sims = DataStructs.BulkTanimotoSimilarity(fp_i,fps2)
+            elif simtype == 'dice':
+                sims = DataStructs.BulkDiceSimilarity(fp_i,fps2)
+            sim_mat[i,:] = sims
+        return sim_mat
+
+    def compound_clustering(self, ligand_list, mol_list):
+        sys.stderr.write('start compound clustering...\n')
+        fps = self.get_fps(mol_list)
+        sim_mat = self.calculate_sims(fps, fps)
+        sys.stderr.write(f'compound sim mat: {sim_mat.shape}\n')
+        preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
+
+        C_dist = pdist(fps, 'jaccard')
+        C_link = single(C_dist)
+        for thre in [0.3, 0.4, 0.5, 0.6]:
+            C_clusters = fcluster(C_link, thre, 'distance')
+            len_list = []
+            for i in range(1,max(C_clusters)+1):
+                len_list.append(C_clusters.tolist().count(i))
+            sys.stderr.write(f'thresold: {thre}; total num of compounds: {len(ligand_list)}; num of clusters: {max(C_clusters)}; max_length: {max(len_list)}\n')
+            C_cluster_dict = {ligand_list[i]:C_clusters[i] for i in range(len(ligand_list))}
+            with open(os.path.join(preprocessed_dir, MEASURE+'_compound_cluster_dict_'+str(thre)),'wb') as f:
+                pickle.dump(C_cluster_dict, f, protocol=0)
+
+
+    def clustering(self):
+        sys.stderr.write('Step 5/5, clustering...\n')
+        compound_list = list(set(self.valid_cid_list))
+        protein_list = list(set(self.valid_pid_list))
+        # compound clustering
+        mol_list = [mol_dict[ligand] for ligand in compound_list]
+        self.compound_clustering(compound_list, mol_list)
 
 
 preprocessor = Preprocessor(config_fn)
