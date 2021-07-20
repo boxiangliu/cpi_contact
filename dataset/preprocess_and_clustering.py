@@ -9,7 +9,8 @@ from collections import defaultdict
 import numpy as np
 from scipy.cluster.hierarchy import fcluster, linkage, single
 from scipy.spatial.distance import pdist
-
+import torch
+from tqdm import tqdm
 
 def pickle_dump(dictionary, file_name):
     pickle.dump(dict(dictionary), open(file_name, 'wb'), protocol=0)
@@ -28,8 +29,8 @@ class Preprocessor(DataUtils):
         self.interaction_dict = self.get_interaction_dict()
         self.pair_info_dict = self.get_pair_info_dict()
         self.get_input()
-        self.save_data()
-        self.clustering()
+        # self.save_data()
+        # self.clustering()
 
     def set_measure(self, measure):
         assert measure in ["IC50", "KIKD"]
@@ -237,15 +238,34 @@ class Preprocessor(DataUtils):
         self.valid_pairwise_mask_list = []
         self.valid_pairwise_mat_list = []
         self.mol_inputs, self.seq_inputs = [], []
-        
+        self.msa_features_dict = {}
+        self.msa_features = []
+        msa_feature_dir = self.config["DATA"]["MSA_FEATURES"]
+        n_msa_feature_not_found = 0
+
+        pid_list = [pair_info_dict[k][2] for k in pair_info_dict]
+        for pid in tqdm(set(pid_list)):
+            msa_feature_fn = os.path.join(msa_feature_dir, pid + ".pt")
+            if not os.path.exists(msa_feature_fn):
+                continue
+            msa_feature = torch.load(msa_feature_fn)
+            self.msa_features_dict[pid] = msa_feature
+
         # get inputs
-        for item in pair_info_dict:
+        for item in tqdm(pair_info_dict):
             pdbid, cid, pid, value, mol, seq, pairwise_mask, pairwise_mat = pair_info_dict[item]
             fa, fb, anb, bnb, nbs_mat = self.Mol2Graph(mol)
 
             if np.array_equal(fa,[]):
                 sys.stderr.write(f'num of neighbor > 6, {cid}\n')
                 continue
+
+            if pid not in self.msa_features_dict:
+                sys.stderr.write(f"{pid}: MSA not found\n")
+                n_msa_feature_not_found += 1
+                continue
+
+            self.msa_features.append(self.msa_features_dict[pid])
             self.mol_inputs.append([fa, fb, anb, bnb, nbs_mat])
             self.seq_inputs.append(self.Protein2Sequence(seq,ngram=1))
             self.valid_value_list.append(value)
@@ -254,7 +274,7 @@ class Preprocessor(DataUtils):
             self.valid_pairwise_mask_list.append(pairwise_mask)
             self.valid_pairwise_mat_list.append(pairwise_mat)
             self.wlnn_train_list.append(pdbid)
-
+        sys.stderr.write(f"{n_msa_feature_not_found} MSA features not found\n")
 
     def save_data(self):
         # get data pack
@@ -266,14 +286,17 @@ class Preprocessor(DataUtils):
         valid_pairwise_mat_list = self.valid_pairwise_mat_list
         mol_inputs = self.mol_inputs
         seq_inputs = self.seq_inputs
+        msa_features = self.msa_features
         MEASURE = self.MEASURE
         preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
         if not os.path.exists(preprocessed_dir):
             os.makedirs(preprocessed_dir)
 
         fa_list, fb_list, anb_list, bnb_list, nbs_mat_list = zip(*mol_inputs)
-        data_pack = [np.array(fa_list), np.array(fb_list), np.array(anb_list), np.array(bnb_list), np.array(nbs_mat_list), np.array(seq_inputs), \
-        np.array(valid_value_list), np.array(valid_cid_list), np.array(valid_pid_list), np.array(valid_pairwise_mask_list), np.array(valid_pairwise_mat_list)]
+        data_pack = [np.array(fa_list), np.array(fb_list), np.array(anb_list), np.array(bnb_list), \
+                     np.array(nbs_mat_list), np.array(seq_inputs), np.array(valid_value_list), \
+                     np.array(valid_cid_list), np.array(valid_pid_list), np.array(valid_pairwise_mask_list), \
+                     np.array(valid_pairwise_mat_list), np.array(msa_features)]
         
         # save data
         with open(os.path.join(preprocessed_dir, 'pdbbind_all_combined_input_'+MEASURE), 'wb') as f:
