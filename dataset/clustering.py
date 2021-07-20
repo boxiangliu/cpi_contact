@@ -7,9 +7,13 @@ from rdkit.Chem import AllChem
 from rdkit import DataStructs
 from collections import defaultdict
 import numpy as np
+from scipy.cluster.hierarchy import fcluster, linkage, single
+from scipy.spatial.distance import pdist
+
 
 def pickle_dump(dictionary, file_name):
     pickle.dump(dict(dictionary), open(file_name, 'wb'), protocol=0)
+
 
 class Preprocessor(DataUtils):
     def __init__(self, config_fn, measure="IC50"):
@@ -25,6 +29,7 @@ class Preprocessor(DataUtils):
         self.pair_info_dict = self.get_pair_info_dict()
         self.get_input()
         self.save_data()
+        self.clustering()
 
     def set_measure(self, measure):
         assert measure in ["IC50", "KIKD"]
@@ -315,17 +320,53 @@ class Preprocessor(DataUtils):
                 len_list.append(C_clusters.tolist().count(i))
             sys.stderr.write(f'thresold: {thre}; total num of compounds: {len(ligand_list)}; num of clusters: {max(C_clusters)}; max_length: {max(len_list)}\n')
             C_cluster_dict = {ligand_list[i]:C_clusters[i] for i in range(len(ligand_list))}
-            with open(os.path.join(preprocessed_dir, MEASURE+'_compound_cluster_dict_'+str(thre)),'wb') as f:
+            with open(os.path.join(preprocessed_dir, self.MEASURE+'_compound_cluster_dict_'+str(thre)),'wb') as f:
                 pickle.dump(C_cluster_dict, f, protocol=0)
+
+
+    def protein_clustering(self, protein_list):
+        preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
+        alignment_score_fn = os.path.join(self.config["DATA"]["WD"], "alignment_scores.pkl")
+        with open(alignment_score_fn, "rb") as f:
+            alignment_score = pickle.load(f)
+        calc_dist = lambda p_i, p_j: 1 - alignment_score[p_i][p_j] / \
+                    (np.sqrt(alignment_score[p_i][p_i]) * np.sqrt(alignment_score[p_j][p_j]))
+
+
+        # Remove proteins not in alignment_score
+        protein_list = [x for x in protein_list if x in alignment_score] 
+        n_protein = len(protein_list)
+        P_dist = []
+        for i in range(n_protein):
+            for j in range(i+1, n_protein):
+                p_i = protein_list[i]
+                p_j = protein_list[j]
+                P_dist.append(calc_dist(p_i, p_j))
+        P_dist = np.array(P_dist)
+        P_link = single(P_dist)
+        # Address numerical precision problem
+        P_link[P_link < 0] = 0 
+        for thre in [0.3, 0.4, 0.5, 0.6]:
+            P_clusters = fcluster(P_link, thre, 'distance')
+            len_list = []
+            for i in range(1,max(P_clusters)+1):
+                len_list.append(P_clusters.tolist().count(i))
+            sys.stderr.write(f'threshold: {thre}; total num of proteins: {len(protein_list)}; num of clusters: {max(P_clusters)}; max length: {max(len_list)}\n')
+            P_cluster_dict = {protein_list[i]:P_clusters[i] for i in range(len(protein_list))}
+            with open(os.path.join(preprocessed_dir, self.MEASURE+'_protein_cluster_dict_'+str(thre)),'wb') as f:
+                pickle.dump(P_cluster_dict, f, protocol=0)
 
 
     def clustering(self):
         sys.stderr.write('Step 5/5, clustering...\n')
-        compound_list = list(set(self.valid_cid_list))
-        protein_list = list(set(self.valid_pid_list))
         # compound clustering
-        mol_list = [mol_dict[ligand] for ligand in compound_list]
+        compound_list = list(set(self.valid_cid_list))
+        mol_list = [self.mol_dict[ligand] for ligand in compound_list]
         self.compound_clustering(compound_list, mol_list)
+
+        # protein clustering
+        protein_list = list(set(self.valid_pid_list))
+        self.protein_clustering(protein_list)
 
 
 preprocessor = Preprocessor(config_fn)

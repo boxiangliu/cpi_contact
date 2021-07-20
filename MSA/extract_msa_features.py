@@ -162,7 +162,7 @@ class MSAFeatureExtractor(MSAUtils):
         elif isinstance(a3m_fn, list):
             msa_data = [self.read_msa(fn, 16) for fn in a3m_fn]
 
-        id_ = os.path.basename(a3m_fn).replace(".a3m", "")
+        id_ = os.path.basename(a3m_fn).replace(".a3m", "").split("_")[1]
         msa_batch_labels, msa_batch_strs, msa_batch_tokens = self.converter(
             msa_data)
         # Remove batch with lengths bigger than 1024:
@@ -179,7 +179,7 @@ class MSAFeatureExtractor(MSAUtils):
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
-        id_ = os.path.basename(a3m_fn).replace(".a3m", "")
+        id_ = os.path.basename(a3m_fn).replace(".a3m", "").split("_")[1]
         out_fn = os.path.join(out_dir, id_ + ".pt")
 
         if os.path.exists(out_fn):
@@ -202,6 +202,7 @@ def main(fn_list=None, debug=False):
         config_fn, "esm_msa1_t12_100M_UR50S")
 
     msa_dir = msa_feature_extractor.config["DATA"]["MSA"]
+    out_dir = msa_feature_extractor.config["DATA"]["MSA_FEATURES"]
 
     if fn_list is None:
         fn_list = []
@@ -220,9 +221,13 @@ def main(fn_list=None, debug=False):
     sys.stderr.write(f"Files read: {len(fn_list)}\n")
 
     status = Counter()
-    status['n'] = len(fn_list)
     for fn in fn_list:
+        id_ = os.path.basename(fn).replace(".a3m","").split("_")[1]
+        out_fn = os.path.join(out_dir, id_ + ".pt")
+        if os.path.exists(out_fn):
+            continue
         res = msa_feature_extractor.extract_and_save(fn)
+        status['n'] += 1
         status[res] += 1
 
     sys.stderr.write(f"Total proteins processed: {status['n']}\n")
