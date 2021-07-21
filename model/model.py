@@ -64,7 +64,7 @@ class Net(nn.Module):
         self.embed_seq = nn.Embedding(len(self.init_word_features), 20, padding_idx=0)
         self.embed_seq.weight = nn.Parameter(self.init_word_features)
         self.embed_seq.weight.requires_grad = False
-        
+        breakpoint()
         self.conv_first = nn.Conv1d(20, self.hidden_size1, kernel_size=self.kernel_size, padding=(self.kernel_size-1)/2)
         self.conv_last = nn.Conv1d(self.hidden_size1, self.hidden_size1, kernel_size=self.kernel_size, padding=(self.kernel_size-1)/2)
         
