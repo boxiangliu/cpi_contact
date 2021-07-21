@@ -1,8 +1,8 @@
 import numpy as np
 import pickle
 from sklearn.metrics import mean_squared_error, precision_score, roc_auc_score
-#from sklearn.model_selection import KFold
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
+# from sklearn.cross_validation import KFold
 import time
 import torch
 from torch import nn
