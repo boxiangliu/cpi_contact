@@ -195,7 +195,6 @@ class Net(nn.Module):
     
     
     def Pairwise_pred_module(self, batch_size, comp_feature, prot_feature, vertex_mask, seq_mask):
-        import ipdb; ipdb.set_trace()
         pairwise_c_feature = F.leaky_relu(self.pairwise_compound(comp_feature), 0.1)
         pairwise_p_feature = F.leaky_relu(self.pairwise_protein(prot_feature), 0.1)
         pairwise_pred = torch.sigmoid(torch.matmul(pairwise_c_feature, pairwise_p_feature.transpose(1,2)))
