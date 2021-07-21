@@ -64,13 +64,12 @@ class Net(nn.Module):
         self.embed_seq = nn.Embedding(len(self.init_word_features), 20, padding_idx=0)
         self.embed_seq.weight = nn.Parameter(self.init_word_features)
         self.embed_seq.weight.requires_grad = False
-        breakpoint()
-        self.conv_first = nn.Conv1d(20, self.hidden_size1, kernel_size=self.kernel_size, padding=(self.kernel_size-1)/2)
-        self.conv_last = nn.Conv1d(self.hidden_size1, self.hidden_size1, kernel_size=self.kernel_size, padding=(self.kernel_size-1)/2)
+        self.conv_first = nn.Conv1d(20, self.hidden_size1, kernel_size=self.kernel_size, padding=(self.kernel_size-1)//2)
+        self.conv_last = nn.Conv1d(self.hidden_size1, self.hidden_size1, kernel_size=self.kernel_size, padding=(self.kernel_size-1)//2)
         
         self.plain_CNN = nn.ModuleList([])
         for i in range(self.inner_CNN_depth):
-            self.plain_CNN.append(nn.Conv1d(self.hidden_size1, self.hidden_size1, kernel_size=self.kernel_size, padding=(self.kernel_size-1)/2))
+            self.plain_CNN.append(nn.Conv1d(self.hidden_size1, self.hidden_size1, kernel_size=self.kernel_size, padding=(self.kernel_size-1)//2))
         
         #RNN parameters
         #self.rnn = SRU(input_size=self.hidden_size1, hidden_size=self.hidden_size1/2, num_layers=1, dropout=0.0, bidirectional=True, layer_norm=False, rescale=True)
