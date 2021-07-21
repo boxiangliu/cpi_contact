@@ -305,16 +305,16 @@ def load_data(measure, setting, clu_thre, n_fold):
 # network utils
 def loading_emb(measure):
 	#load intial atom and bond features (i.e., embeddings)
-	f = open('../data/preprocessed/pdbbind_all_atom_dict_'+measure)
+	f = open('../data/preprocessed/pdbbind_all_atom_dict_'+measure, "rb")
 	breakpoint()
 	atom_dict = pickle.load(f)
 	f.close()
 	
-	f = open('../data/preprocessed/pdbbind_all_bond_dict_'+measure)
+	f = open('../data/preprocessed/pdbbind_all_bond_dict_'+measure, "rb")
 	bond_dict = pickle.load(f)
 	f.close()
 	
-	f = open('../data/preprocessed/pdbbind_all_word_dict_'+measure)
+	f = open('../data/preprocessed/pdbbind_all_word_dict_'+measure, "rb")
 	word_dict = pickle.load(f)
 	f.close()
 	
