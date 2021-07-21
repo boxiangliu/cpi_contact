@@ -100,8 +100,7 @@ def get_mask(arr_list):
 #embedding selection function
 def add_index(input_array, ebd_size):
 	batch_size, n_vertex, n_nbs = np.shape(input_array)
-	breakpoint()
-	add_idx = np.array(range(0,(ebd_size)*batch_size,ebd_size)*(n_nbs*n_vertex))
+	add_idx = np.array(list(range(0,(ebd_size)*batch_size,ebd_size))*(n_nbs*n_vertex))
 	add_idx = np.transpose(add_idx.reshape(-1,batch_size))
 	add_idx = add_idx.reshape(-1)
 	new_array = input_array.reshape(-1)+add_idx
