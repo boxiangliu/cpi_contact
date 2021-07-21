@@ -204,7 +204,7 @@ def load_data(measure, setting, clu_thre, n_fold):
 	
 	# train-test split
 	train_idx_list, valid_idx_list, test_idx_list = [], [], []
-	print 'setting:', setting
+	print('setting:', setting)
 	if setting == 'imputation':
 		pair_train_clusters, pair_test_clusters, c_train_clusters, c_test_clusters, p_train_clusters, p_test_clusters, C_cluster_dict, P_cluster_dict \
 		= split_train_test_clusters(measure, clu_thre, n_fold)
@@ -227,7 +227,7 @@ def load_data(measure, setting, clu_thre, n_fold):
 			train_idx_list.append(train_idx)
 			valid_idx_list.append(valid_idx)
 			test_idx_list.append(test_idx)
-			print 'fold', fold, 'train ',len(train_idx),'test ',len(test_idx),'valid ',len(valid_idx)
+			print('fold', fold, 'train ',len(train_idx),'test ',len(test_idx),'valid ',len(valid_idx))
 			
 	elif setting == 'new_protein':
 		pair_train_clusters, pair_test_clusters, c_train_clusters, c_test_clusters, p_train_clusters, p_test_clusters, C_cluster_dict, P_cluster_dict \
@@ -249,7 +249,7 @@ def load_data(measure, setting, clu_thre, n_fold):
 			train_idx_list.append(train_idx)
 			valid_idx_list.append(valid_idx)
 			test_idx_list.append(test_idx)
-			print 'fold', fold, 'train ',len(train_idx),'test ',len(test_idx),'valid ',len(valid_idx)
+			print('fold', fold, 'train ',len(train_idx),'test ',len(test_idx),'valid ',len(valid_idx))
 			
 	elif setting == 'new_compound':
 		pair_train_clusters, pair_test_clusters, c_train_clusters, c_test_clusters, p_train_clusters, p_test_clusters, C_cluster_dict, P_cluster_dict \
@@ -271,7 +271,7 @@ def load_data(measure, setting, clu_thre, n_fold):
 			train_idx_list.append(train_idx)
 			valid_idx_list.append(valid_idx)
 			test_idx_list.append(test_idx)
-			print 'fold', fold, 'train ',len(train_idx),'test ',len(test_idx),'valid ',len(valid_idx)
+			print('fold', fold, 'train ',len(train_idx),'test ',len(test_idx),'valid ',len(valid_idx))
 	
 	elif setting == 'new_new':
 		assert n_fold ** 0.5 == int(n_fold ** 0.5)
@@ -298,7 +298,7 @@ def load_data(measure, setting, clu_thre, n_fold):
 				train_idx_list.append(train_idx)
 				valid_idx_list.append(valid_idx)
 				test_idx_list.append(test_idx)
-				print 'fold', fold_x*int(n_fold ** 0.5)+fold_y, 'train ',len(train_idx),'test ',len(test_idx),'valid ',len(valid_idx)
+				print('fold', fold_x*int(n_fold ** 0.5)+fold_y, 'train ',len(train_idx),'test ',len(test_idx),'valid ',len(valid_idx))
 	return data_pack, train_idx_list, valid_idx_list, test_idx_list
 
 
@@ -317,7 +317,7 @@ def loading_emb(measure):
 	word_dict = pickle.load(f)
 	f.close()
 	
-	print 'atom dict size:', len(atom_dict), ', bond dict size:', len(bond_dict), ', word dict size:', len(word_dict)
+	print('atom dict size:', len(atom_dict), ', bond dict size:', len(bond_dict), ', word dict size:', len(word_dict))
 	
 	init_atom_features = np.zeros((len(atom_dict), atom_fdim))
 	init_bond_features = np.zeros((len(bond_dict), bond_fdim))
