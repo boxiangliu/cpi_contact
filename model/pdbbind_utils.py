@@ -164,30 +164,30 @@ def split_train_test_clusters(measure, clu_thre, n_fold):
 	np.random.shuffle(C_cluster_list)
 	np.random.shuffle(P_cluster_list)
 	# n-fold split
-	c_kf = KFold(len(C_cluster_list), n_fold, shuffle=True)
-	p_kf = KFold(len(P_cluster_list), n_fold, shuffle=True)
-	#c_kf = KFold(n_fold,shuffle=True)
-	#p_kf = KFold(n_fold,shuffle=True)
+	# c_kf = KFold(len(C_cluster_list), n_fold, shuffle=True)
+	# p_kf = KFold(len(P_cluster_list), n_fold, shuffle=True)
+	c_kf = KFold(n_fold,shuffle=True)
+	p_kf = KFold(n_fold,shuffle=True)
 	c_train_clusters, c_test_clusters = [], []
-	for train_idx, test_idx in c_kf: #.split(C_cluster_list):
+	for train_idx, test_idx in c_kf.split(C_cluster_list):
 		c_train_clusters.append(C_cluster_list[train_idx])
 		c_test_clusters.append(C_cluster_list[test_idx])
 	p_train_clusters, p_test_clusters = [], []
-	for train_idx, test_idx in p_kf: #.split(P_cluster_list):
+	for train_idx, test_idx in p_kf.split(P_cluster_list):
 		p_train_clusters.append(P_cluster_list[train_idx])
 		p_test_clusters.append(P_cluster_list[test_idx])
 	
 	
-	#pair_kf = KFold(n_fold,shuffle=True)
+	pair_kf = KFold(n_fold,shuffle=True)
 	pair_list = []
 	for i_c in C_cluster_list:
 		for i_p in P_cluster_list:
 			pair_list.append('c'+str(i_c)+'p'+str(i_p))
 	pair_list = np.array(pair_list)
 	np.random.shuffle(pair_list)
-	pair_kf = KFold(len(pair_list), n_fold, shuffle=True)
+	# pair_kf = KFold(len(pair_list), n_fold, shuffle=True)
 	pair_train_clusters, pair_test_clusters = [], []
-	for train_idx, test_idx in pair_kf: #.split(pair_list):
+	for train_idx, test_idx in pair_kf.split(pair_list):
 		pair_train_clusters.append(pair_list[train_idx])
 		pair_test_clusters.append(pair_list[test_idx])
 	
