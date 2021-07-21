@@ -9,9 +9,9 @@ from torch import nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import torch.optim as optim
-
+sys.path.append("/mnt/scratch/boxiang/projects/cpi_contact/scripts/model/")
 from pdbbind_utils import *
-from CPI_model import *
+from model import *
 
 # no RNN
 #train and evaluate

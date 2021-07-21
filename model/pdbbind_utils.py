@@ -9,6 +9,8 @@ from torch import nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import math
+import sys
+sys.path.append("/mnt/scratch/boxiang/projects/cpi_contact/scripts/model/")
 from metrics import *
 
 import random
@@ -149,7 +151,7 @@ def data_from_index(data_pack, idx_list):
 
 def split_train_test_clusters(measure, clu_thre, n_fold):
 	# load cluster dict
-	cluster_path = '../preprocessing/'
+	cluster_path = '../data/preprocessing/'
 	with open(cluster_path+measure+'_compound_cluster_dict_'+str(clu_thre), 'rb') as f:
 		C_cluster_dict = pickle.load(f)
 	with open(cluster_path+measure+'_protein_cluster_dict_'+str(clu_thre), 'rb') as f:
@@ -194,7 +196,7 @@ def split_train_test_clusters(measure, clu_thre, n_fold):
 
 def load_data(measure, setting, clu_thre, n_fold):
 	# load data
-	with open('../preprocessing/pdbbind_all_combined_input_'+measure,'rb') as f:
+	with open('../data/preprocessing/pdbbind_all_combined_input_'+measure,'rb') as f:
 		data_pack = pickle.load(f)
 	cid_list = data_pack[7]
 	pid_list = data_pack[8]
@@ -303,15 +305,15 @@ def load_data(measure, setting, clu_thre, n_fold):
 # network utils
 def loading_emb(measure):
 	#load intial atom and bond features (i.e., embeddings)
-	f = open('../preprocessing/pdbbind_all_atom_dict_'+measure)
+	f = open('../data/preprocessing/pdbbind_all_atom_dict_'+measure)
 	atom_dict = pickle.load(f)
 	f.close()
 	
-	f = open('../preprocessing/pdbbind_all_bond_dict_'+measure)
+	f = open('../data/preprocessing/pdbbind_all_bond_dict_'+measure)
 	bond_dict = pickle.load(f)
 	f.close()
 	
-	f = open('../preprocessing/pdbbind_all_word_dict_'+measure)
+	f = open('../data/preprocessing/pdbbind_all_word_dict_'+measure)
 	word_dict = pickle.load(f)
 	f.close()
 	
