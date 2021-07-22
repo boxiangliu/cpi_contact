@@ -47,7 +47,7 @@ def train_and_eval(train_data, valid_data, test_data, params, batch_size=32, num
         for i in range(int(len(train_data[0])/batch_size)):
             if i % 100 == 0:
                 print('epoch', epoch, 'batch', i)
-            
+            breakpoint()
             input_vertex, input_edge, input_atom_adj, input_bond_adj, input_num_nbs, input_seq, affinity_label, pairwise_mask, pairwise_label = \
             [ train_data[data_idx][shuffle_index[i*batch_size:(i+1)*batch_size]] for data_idx in range(9)]
             
