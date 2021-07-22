@@ -29,8 +29,8 @@ class Preprocessor(DataUtils):
         self.interaction_dict = self.get_interaction_dict()
         self.pair_info_dict = self.get_pair_info_dict()
         self.get_input()
-        # self.save_data()
-        # self.clustering()
+        self.save_data()
+        self.clustering()
 
     def set_measure(self, measure):
         assert measure in ["IC50", "KIKD"]
