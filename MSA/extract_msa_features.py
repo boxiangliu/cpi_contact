@@ -139,10 +139,11 @@ class MSAUtils(DataUtils):
 
 class MSAFeatureExtractor(MSAUtils):
 
-    def __init__(self, config, model):
+    def __init__(self, config, model, return_contacts=False):
         super(MSAFeatureExtractor, self).__init__(config_fn)
         self.model = model
         self.model, self.alphabet, self.converter = self.get_model(model, eval=True)
+        self.return_contacts = return_contacts
 
     def get_model(self, model, eval=True):
         if model == "esm_msa1_t12_100M_UR50S":
@@ -171,7 +172,8 @@ class MSAFeatureExtractor(MSAUtils):
             sys.stderr.write(f"{id_} is longer than 1024.\n")
             return None
         results = self.model.forward(
-            msa_batch_tokens, need_head_weights=True, repr_layers=[12])
+            msa_batch_tokens, need_head_weights=True, 
+            repr_layers=[12], return_contacts=self.return_contacts)
         return {"id": id_, "representations": results["representations"][12], "row_attentions": results["row_attentions"][:, -1, :, :, :]}
 
     def extract_and_save(self, a3m_fn):
@@ -196,10 +198,11 @@ class MSAFeatureExtractor(MSAUtils):
 @click.command()
 @click.option("--fn_list", default="/mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list_eu", help="File list")
 @click.option("--debug", default=False, help="Debug")
-def main(fn_list=None, debug=False):
+@click.option("--return_contacts", default=False, help="Whether to return contacts")
+def main(fn_list=None, debug=False, return_contacts=False):
     # fasta_preparer = FastaPreparer(config_fn)
     msa_feature_extractor = MSAFeatureExtractor(
-        config_fn, "esm_msa1_t12_100M_UR50S")
+        config_fn, "esm_msa1_t12_100M_UR50S", return_contacts)
 
     msa_dir = msa_feature_extractor.config["DATA"]["MSA"]
     out_dir = msa_feature_extractor.config["DATA"]["MSA_FEATURES"]

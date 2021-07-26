@@ -246,7 +246,7 @@ class Preprocessor(DataUtils):
 
         pid_list = [pair_info_dict[k][2] for k in pair_info_dict]
         if self.debug: 
-            pid_list = pid_list[:2]
+            pid_list = pid_list[:20]
         for pid in tqdm(set(pid_list)):
             msa_feature_fn = os.path.join(msa_feature_dir, pid + ".pt")
             if not os.path.exists(msa_feature_fn):
@@ -305,6 +305,7 @@ class Preprocessor(DataUtils):
         with open(os.path.join(preprocessed_dir, 'pdbbind_all_combined_input_'+MEASURE), 'wb') as f:
             pickle.dump(data_pack, f, protocol=0)
         
+        self.data_pack = data_pack
         np.save(os.path.join(preprocessed_dir, 'wlnn_train_list_'+MEASURE), wlnn_train_list)
         
         pickle_dump(self.atom_dict, os.path.join(preprocessed_dir, 'pdbbind_all_atom_dict_'+MEASURE))
@@ -395,4 +396,4 @@ class Preprocessor(DataUtils):
         self.protein_clustering(protein_list)
 
 
-preprocessor = Preprocessor(config_fn, debug=False)
+preprocessor = Preprocessor(config_fn, debug=True)
