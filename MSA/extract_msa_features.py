@@ -197,8 +197,8 @@ class MSAFeatureExtractor(MSAUtils):
 
 @click.command()
 @click.option("--fn_list", default="/mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list_eu", help="File list")
-@click.option("--debug", default=False, help="Debug")
-@click.option("--return_contacts", default=False, help="Whether to return contacts")
+@click.option("--debug/--no-debug", default=False, help="Debug")
+@click.option("--return_contacts/--no-return_contacts", default=False, help="Whether to return contacts")
 def main(fn_list=None, debug=False, return_contacts=False):
     # fasta_preparer = FastaPreparer(config_fn)
     msa_feature_extractor = MSAFeatureExtractor(
