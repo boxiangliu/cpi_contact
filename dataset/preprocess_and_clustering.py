@@ -17,8 +17,9 @@ def pickle_dump(dictionary, file_name):
 
 
 class Preprocessor(DataUtils):
-    def __init__(self, config_fn, measure="IC50"):
+    def __init__(self, config_fn, measure="IC50", debug=False):
         super(Preprocessor, self).__init__(config_fn)
+        self.debug = debug
         self.max_nb = 6
         self.word_dict = self.get_word_dict()
         self.bond_dict = defaultdict(lambda: len(self.bond_dict))
@@ -244,12 +245,14 @@ class Preprocessor(DataUtils):
         n_msa_feature_not_found = 0
 
         pid_list = [pair_info_dict[k][2] for k in pair_info_dict]
+        if self.debug: 
+            pid_list = pid_list[:2]
         for pid in tqdm(set(pid_list)):
             msa_feature_fn = os.path.join(msa_feature_dir, pid + ".pt")
             if not os.path.exists(msa_feature_fn):
                 continue
             msa_feature = torch.load(msa_feature_fn)
-            self.msa_features_dict[pid] = msa_feature
+            self.msa_features_dict[pid] = msa_feature["representations"].detach()
 
         # get inputs
         for item in tqdm(pair_info_dict):
@@ -296,7 +299,7 @@ class Preprocessor(DataUtils):
         data_pack = [np.array(fa_list), np.array(fb_list), np.array(anb_list), np.array(bnb_list), \
                      np.array(nbs_mat_list), np.array(seq_inputs), np.array(valid_value_list), \
                      np.array(valid_cid_list), np.array(valid_pid_list), np.array(valid_pairwise_mask_list), \
-                     np.array(valid_pairwise_mat_list), np.array(msa_features)]
+                     np.array(valid_pairwise_mat_list), np.array(msa_features, dtype=object)]
         
         # save data
         with open(os.path.join(preprocessed_dir, 'pdbbind_all_combined_input_'+MEASURE), 'wb') as f:
@@ -392,4 +395,4 @@ class Preprocessor(DataUtils):
         self.protein_clustering(protein_list)
 
 
-preprocessor = Preprocessor(config_fn)
+preprocessor = Preprocessor(config_fn, debug=False)
