@@ -299,7 +299,7 @@ class Preprocessor(DataUtils):
         data_pack = [np.array(fa_list), np.array(fb_list), np.array(anb_list), np.array(bnb_list), \
                      np.array(nbs_mat_list), np.array(seq_inputs), np.array(valid_value_list), \
                      np.array(valid_cid_list), np.array(valid_pid_list), np.array(valid_pairwise_mask_list), \
-                     np.array(valid_pairwise_mat_list), np.array(msa_features, dtype=object)]
+                     np.array(valid_pairwise_mat_list), msa_features]
         
         # save data
         with open(os.path.join(preprocessed_dir, 'pdbbind_all_combined_input_'+MEASURE), 'wb') as f:
@@ -396,4 +396,4 @@ class Preprocessor(DataUtils):
         self.protein_clustering(protein_list)
 
 
-preprocessor = Preprocessor(config_fn, debug=True)
+preprocessor = Preprocessor(config_fn, debug=False)
