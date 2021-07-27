@@ -71,7 +71,7 @@ def pad_label_2d(label, vertex, sequence):
 
 def pack2D(arr_list):
 	N = max([x.shape[0] for x in arr_list])
-	M = max_nb#max([x.shape[1] for x in arr_list])
+	M = max([x.shape[1] for x in arr_list])
 	a = np.zeros((len(arr_list), N, M))
 	for i, arr in enumerate(arr_list):
 		n = arr.shape[0]
@@ -119,13 +119,12 @@ def batch_data_process(data):
 	#pad proteins and make masks
 	seq_mask = get_mask(sequence)
 	sequence = pack1D(sequence+1)
-	breakpoint()
 	msa_feature = pack2D(msa_feature)
 
 	#add index
 	atom_adj = add_index(atom_adj, np.shape(atom_adj)[1])
 	bond_adj = add_index(bond_adj, np.shape(edge)[1])
-	
+	breakpoint()
 	#convert to torch cuda data type
 	vertex_mask = Variable(torch.FloatTensor(vertex_mask)).cuda()
 	vertex = Variable(torch.LongTensor(vertex)).cuda()
