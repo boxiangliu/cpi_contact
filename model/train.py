@@ -145,11 +145,11 @@ if __name__ == "__main__":
     if setting == 'new_compound':
         n_fold = 5
         batch_size = 32
-        k_head, kernel_size, hidden_size1, hidden_size2, hidden_size3 = 2, 7, 128, 128, hidden_size1 + 768
+        k_head, kernel_size, hidden_size1, hidden_size2, hidden_size3 = 2, 7, 128, 128, 128 + 768
     elif setting == 'new_protein':
         n_fold = 5
         batch_size = 32
-        k_head, kernel_size, hidden_size1, hidden_size2, hidden_size3 = 1, 5, 128, 128, hidden_size1 + 768
+        k_head, kernel_size, hidden_size1, hidden_size2, hidden_size3 = 1, 5, 128, 128, 128 + 768
     elif setting == 'new_new':
         n_fold = 9
         batch_size = 32
