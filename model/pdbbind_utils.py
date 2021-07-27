@@ -124,7 +124,7 @@ def batch_data_process(data):
 	#add index
 	atom_adj = add_index(atom_adj, np.shape(atom_adj)[1])
 	bond_adj = add_index(bond_adj, np.shape(edge)[1])
-	breakpoint()
+
 	#convert to torch cuda data type
 	vertex_mask = Variable(torch.FloatTensor(vertex_mask)).cuda()
 	vertex = Variable(torch.LongTensor(vertex)).cuda()
@@ -135,8 +135,9 @@ def batch_data_process(data):
 	
 	seq_mask = Variable(torch.FloatTensor(seq_mask)).cuda()
 	sequence = Variable(torch.LongTensor(sequence)).cuda()
-	
-	return vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence
+	msa_feature = Variable(torch.FloatTensor(msa_feature)).cuda()
+
+	return vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence, msa_feature
 
 
 # load data
