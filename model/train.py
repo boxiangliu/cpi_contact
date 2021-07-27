@@ -154,9 +154,9 @@ if __name__ == "__main__":
         n_fold = 9
         batch_size = 32
         #k_head, kernel_size, hidden_size1, hidden_size2 = 1, 7, 128, 128
-    para_names = ['GNN_depth', 'inner_CNN_depth', 'DMA_depth', 'k_head', 'kernel_size', 'hidden_size1', 'hidden_size2']
+    para_names = ['GNN_depth', 'inner_CNN_depth', 'DMA_depth', 'k_head', 'kernel_size', 'hidden_size1', 'hidden_size2', "hidden_size3"]
     
-    params = [GNN_depth, inner_CNN_depth, DMA_depth, k_head, kernel_size, hidden_size1, hidden_size2]
+    params = [GNN_depth, inner_CNN_depth, DMA_depth, k_head, kernel_size, hidden_size1, hidden_size2, hidden_size3]
     #params = sys.argv[4].split(',')
     #params = map(int, params)
     
