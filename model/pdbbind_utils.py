@@ -141,6 +141,7 @@ def batch_data_process(data):
 
 # load data
 def data_from_index(data_pack, idx_list):
+	breakpoint()
 	fa, fb, anb, bnb, nbs_mat, seq_input = [data_pack[i][idx_list] for i in range(6)]
 	aff_label = data_pack[6][idx_list].astype(float).reshape(-1,1)
 	#cid, pid = [data_pack[i][idx_list] for i in range(7,9)]
