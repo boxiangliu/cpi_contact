@@ -252,7 +252,8 @@ class Preprocessor(DataUtils):
             if not os.path.exists(msa_feature_fn):
                 continue
             msa_feature = torch.load(msa_feature_fn)
-            self.msa_features_dict[pid] = msa_feature["representations"].detach()
+            # dimension: B x MSA x SEQ x HIDDEN
+            self.msa_features_dict[pid] = msa_feature["representations"][0,0,1:,:].detach().numpy()
 
         # get inputs
         for item in tqdm(pair_info_dict):
@@ -290,6 +291,7 @@ class Preprocessor(DataUtils):
         mol_inputs = self.mol_inputs
         seq_inputs = self.seq_inputs
         msa_features = self.msa_features
+        msa_features_dict = self.msa_features_dict
         MEASURE = self.MEASURE
         preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
         if not os.path.exists(preprocessed_dir):
@@ -299,7 +301,7 @@ class Preprocessor(DataUtils):
         data_pack = [np.array(fa_list), np.array(fb_list), np.array(anb_list), np.array(bnb_list), \
                      np.array(nbs_mat_list), np.array(seq_inputs), np.array(valid_value_list), \
                      np.array(valid_cid_list), np.array(valid_pid_list), np.array(valid_pairwise_mask_list), \
-                     np.array(valid_pairwise_mat_list), msa_features]
+                     np.array(valid_pairwise_mat_list), np.array(msa_features)]
         
         # save data
         with open(os.path.join(preprocessed_dir, 'pdbbind_all_combined_input_'+MEASURE), 'wb') as f:
