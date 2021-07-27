@@ -70,7 +70,6 @@ def pad_label_2d(label, vertex, sequence):
 
 
 def pack2D(arr_list):
-	breakpoint()
 	N = max([x.shape[0] for x in arr_list])
 	M = max_nb#max([x.shape[1] for x in arr_list])
 	a = np.zeros((len(arr_list), N, M))
@@ -121,7 +120,7 @@ def batch_data_process(data):
 	seq_mask = get_mask(sequence)
 	sequence = pack1D(sequence+1)
 	msa_feature = pack2D(msa_feature)
-
+	breakpoint()
 	#add index
 	atom_adj = add_index(atom_adj, np.shape(atom_adj)[1])
 	bond_adj = add_index(bond_adj, np.shape(edge)[1])
