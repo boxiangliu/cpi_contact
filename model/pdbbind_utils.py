@@ -119,8 +119,9 @@ def batch_data_process(data):
 	#pad proteins and make masks
 	seq_mask = get_mask(sequence)
 	sequence = pack1D(sequence+1)
-	msa_feature = pack2D(msa_feature)
 	breakpoint()
+	msa_feature = pack2D(msa_feature)
+
 	#add index
 	atom_adj = add_index(atom_adj, np.shape(atom_adj)[1])
 	bond_adj = add_index(bond_adj, np.shape(edge)[1])
