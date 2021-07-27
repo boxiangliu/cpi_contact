@@ -26,7 +26,7 @@ class Net(nn.Module):
         self.init_bond_features = init_bond_features
         self.init_word_features = init_word_features
         """hyper part"""
-        GNN_depth, inner_CNN_depth, DMA_depth, k_head, kernel_size, hidden_size1, hidden_size2 = params
+        GNN_depth, inner_CNN_depth, DMA_depth, k_head, kernel_size, hidden_size1, hidden_size2, hidden_size3 = params
         self.GNN_depth = GNN_depth
         self.inner_CNN_depth = inner_CNN_depth
         self.DMA_depth = DMA_depth
@@ -34,30 +34,31 @@ class Net(nn.Module):
         self.kernel_size = kernel_size
         self.hidden_size1 = hidden_size1
         self.hidden_size2 = hidden_size2
-        
+        self.hidden_size3 = hidden_size3
+
         """GraphConv Module"""
-        self.vertex_embedding = nn.Linear(atom_fdim, self.hidden_size1) #first transform vertex features into hidden representations
+        self.vertex_embedding = nn.Linear(atom_fdim, self.hidden_size3) #first transform vertex features into hidden representations
         
         # GWM parameters
-        self.W_a_main = nn.ModuleList([nn.ModuleList([nn.Linear(self.hidden_size1, self.hidden_size1) for i in range(self.k_head)]) for i in range(self.GNN_depth)])
-        self.W_a_super = nn.ModuleList([nn.ModuleList([nn.Linear(self.hidden_size1, self.hidden_size1) for i in range(self.k_head)]) for i in range(self.GNN_depth)])
-        self.W_main = nn.ModuleList([nn.ModuleList([nn.Linear(self.hidden_size1, self.hidden_size1) for i in range(self.k_head)]) for i in range(self.GNN_depth)])
-        self.W_bmm = nn.ModuleList([nn.ModuleList([nn.Linear(self.hidden_size1, 1) for i in range(self.k_head)]) for i in range(self.GNN_depth)])
+        self.W_a_main = nn.ModuleList([nn.ModuleList([nn.Linear(self.hidden_size3, self.hidden_size3) for i in range(self.k_head)]) for i in range(self.GNN_depth)])
+        self.W_a_super = nn.ModuleList([nn.ModuleList([nn.Linear(self.hidden_size3, self.hidden_size3) for i in range(self.k_head)]) for i in range(self.GNN_depth)])
+        self.W_main = nn.ModuleList([nn.ModuleList([nn.Linear(self.hidden_size3, self.hidden_size3) for i in range(self.k_head)]) for i in range(self.GNN_depth)])
+        self.W_bmm = nn.ModuleList([nn.ModuleList([nn.Linear(self.hidden_size3, 1) for i in range(self.k_head)]) for i in range(self.GNN_depth)])
         
-        self.W_super = nn.ModuleList([nn.Linear(self.hidden_size1, self.hidden_size1) for i in range(self.GNN_depth)])
-        self.W_main_to_super = nn.ModuleList([nn.Linear(self.hidden_size1*self.k_head, self.hidden_size1) for i in range(self.GNN_depth)])
-        self.W_super_to_main = nn.ModuleList([nn.Linear(self.hidden_size1, self.hidden_size1) for i in range(self.GNN_depth)])
+        self.W_super = nn.ModuleList([nn.Linear(self.hidden_size3, self.hidden_size3) for i in range(self.GNN_depth)])
+        self.W_main_to_super = nn.ModuleList([nn.Linear(self.hidden_size3*self.k_head, self.hidden_size3) for i in range(self.GNN_depth)])
+        self.W_super_to_main = nn.ModuleList([nn.Linear(self.hidden_size3, self.hidden_size3) for i in range(self.GNN_depth)])
         
-        self.W_zm1 = nn.ModuleList([nn.Linear(self.hidden_size1, self.hidden_size1) for i in range(self.GNN_depth)])
-        self.W_zm2 = nn.ModuleList([nn.Linear(self.hidden_size1, self.hidden_size1) for i in range(self.GNN_depth)])
-        self.W_zs1 = nn.ModuleList([nn.Linear(self.hidden_size1, self.hidden_size1) for i in range(self.GNN_depth)])
-        self.W_zs2 = nn.ModuleList([nn.Linear(self.hidden_size1, self.hidden_size1) for i in range(self.GNN_depth)])
-        self.GRU_main = nn.GRUCell(self.hidden_size1, self.hidden_size1)
-        self.GRU_super = nn.GRUCell(self.hidden_size1, self.hidden_size1)
+        self.W_zm1 = nn.ModuleList([nn.Linear(self.hidden_size3, self.hidden_size3) for i in range(self.GNN_depth)])
+        self.W_zm2 = nn.ModuleList([nn.Linear(self.hidden_size3, self.hidden_size3) for i in range(self.GNN_depth)])
+        self.W_zs1 = nn.ModuleList([nn.Linear(self.hidden_size3, self.hidden_size3) for i in range(self.GNN_depth)])
+        self.W_zs2 = nn.ModuleList([nn.Linear(self.hidden_size3, self.hidden_size3) for i in range(self.GNN_depth)])
+        self.GRU_main = nn.GRUCell(self.hidden_size3, self.hidden_size3)
+        self.GRU_super = nn.GRUCell(self.hidden_size3, self.hidden_size3)
         
         # WLN parameters (message passing network)
-        self.label_U2 = nn.ModuleList([nn.Linear(self.hidden_size1+bond_fdim, self.hidden_size1) for i in range(self.GNN_depth)]) #assume no edge feature transformation
-        self.label_U1 = nn.ModuleList([nn.Linear(self.hidden_size1*2, self.hidden_size1) for i in range(self.GNN_depth)])
+        self.label_U2 = nn.ModuleList([nn.Linear(self.hidden_size3+bond_fdim, self.hidden_size3) for i in range(self.GNN_depth)]) #assume no edge feature transformation
+        self.label_U1 = nn.ModuleList([nn.Linear(self.hidden_size3*2, self.hidden_size3) for i in range(self.GNN_depth)])
         
         """CNN-RNN Module"""
         #CNN parameters
@@ -76,9 +77,9 @@ class Net(nn.Module):
         
         
         """Affinity Prediction Module"""
-        self.super_final = nn.Linear(self.hidden_size1, self.hidden_size2)
-        self.c_final = nn.Linear(self.hidden_size1, self.hidden_size2)
-        self.p_final = nn.Linear(self.hidden_size1, self.hidden_size2)
+        self.super_final = nn.Linear(self.hidden_size3, self.hidden_size2)
+        self.c_final = nn.Linear(self.hidden_size3, self.hidden_size2)
+        self.p_final = nn.Linear(self.hidden_size3, self.hidden_size2)
         
         #DMA parameters
         self.mc0 = nn.Linear(hidden_size2, hidden_size2)
@@ -100,8 +101,8 @@ class Net(nn.Module):
         self.W_out = nn.Linear(self.hidden_size2*self.hidden_size2*2, 1)
         
         """Pairwise Interaction Prediction Module"""
-        self.pairwise_compound = nn.Linear(self.hidden_size1, self.hidden_size1)
-        self.pairwise_protein = nn.Linear(self.hidden_size1, self.hidden_size1)
+        self.pairwise_compound = nn.Linear(self.hidden_size3, self.hidden_size3)
+        self.pairwise_protein = nn.Linear(self.hidden_size3, self.hidden_size3)
         
     
     def mask_softmax(self,a, mask, dim=-1):
