@@ -300,7 +300,6 @@ def load_data(measure, setting, clu_thre, n_fold):
 				valid_idx_list.append(valid_idx)
 				test_idx_list.append(test_idx)
 				print('fold', fold_x*int(n_fold ** 0.5)+fold_y, 'train ',len(train_idx),'test ',len(test_idx),'valid ',len(valid_idx))
-	breakpoint()
 	return data_pack, train_idx_list, valid_idx_list, test_idx_list
 
 
