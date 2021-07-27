@@ -249,6 +249,7 @@ class Net(nn.Module):
         batch_size = vertex.size(0)
         
         atom_feature, super_feature = self.GraphConv_module(batch_size, vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask)
+        breakpoint()
         prot_feature = self.CNN_module(batch_size, seq_mask, sequence)
         
         pairwise_pred = self.Pairwise_pred_module(batch_size, atom_feature, prot_feature, vertex_mask, seq_mask)

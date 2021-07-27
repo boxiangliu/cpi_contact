@@ -51,7 +51,7 @@ def train_and_eval(train_data, valid_data, test_data, params, batch_size=32, num
             [ train_data[data_idx][shuffle_index[i*batch_size:(i+1)*batch_size]] for data_idx in range(10)]
             
             inputs = [input_vertex, input_edge, input_atom_adj, input_bond_adj, input_num_nbs, input_seq, msa_feature]
-            vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence = batch_data_process(inputs)
+            vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence, msa_feature = batch_data_process(inputs)
             
             affinity_label = torch.FloatTensor(affinity_label).cuda()
             pairwise_mask = torch.FloatTensor(pairwise_mask).cuda()
