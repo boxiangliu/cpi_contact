@@ -245,7 +245,7 @@ class Net(nn.Module):
         return cf, pf
     
     
-    def forward(self, vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence):
+    def forward(self, vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence, msa_feature):
         batch_size = vertex.size(0)
         
         atom_feature, super_feature = self.GraphConv_module(batch_size, vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask)

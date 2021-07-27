@@ -58,7 +58,7 @@ def train_and_eval(train_data, valid_data, test_data, params, batch_size=32, num
             pairwise_label = torch.FloatTensor(pad_label_2d(pairwise_label, vertex, sequence)).cuda()
             
             optimizer.zero_grad()
-            affinity_pred, pairwise_pred = net(vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence)
+            affinity_pred, pairwise_pred = net(vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence, msa_feature)
             
             loss_aff = criterion1(affinity_pred, affinity_label)
             loss_pairwise = criterion2(pairwise_pred, pairwise_label, pairwise_mask, vertex_mask, seq_mask)
