@@ -213,7 +213,6 @@ class Net(nn.Module):
         comp_feature = F.leaky_relu(self.c_final(comp_feature), 0.1)
         prot_feature = F.leaky_relu(self.p_final(prot_feature), 0.1)
         super_feature = F.leaky_relu(self.super_final(super_feature.view(batch_size,-1)), 0.1)
-        breakpoint()
         cf, pf = self.dma_gru(batch_size, comp_feature, vertex_mask, prot_feature, seq_mask, pairwise_pred)
         
         cf = torch.cat([cf.view(batch_size,-1), super_feature.view(batch_size,-1)], dim=1)
