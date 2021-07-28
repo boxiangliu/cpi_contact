@@ -104,10 +104,10 @@ def test(net, test_data, batch_size):
     label_list = []
     pairwise_auc_list = []
     for i in range(int(math.ceil(len(test_data[0])/float(batch_size)))):
-        input_vertex, input_edge, input_atom_adj, input_bond_adj, input_num_nbs, input_seq, aff_label, pairwise_mask, pairwise_label = \
-        [ test_data[data_idx][i*batch_size:(i+1)*batch_size] for data_idx in range(9)]
+        input_vertex, input_edge, input_atom_adj, input_bond_adj, input_num_nbs, input_seq, aff_label, pairwise_mask, pairwise_label, msa_feature = \
+        [ test_data[data_idx][i*batch_size:(i+1)*batch_size] for data_idx in range(10)]
         
-        inputs = [input_vertex, input_edge, input_atom_adj, input_bond_adj, input_num_nbs, input_seq]
+        inputs = [input_vertex, input_edge, input_atom_adj, input_bond_adj, input_num_nbs, input_seq, msa_feature]
         vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence = batch_data_process(inputs)
         affinity_pred, pairwise_pred = net(vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence)
         
