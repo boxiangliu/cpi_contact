@@ -104,8 +104,8 @@ class Net(nn.Module):
         self.W_out = nn.Linear(self.hidden_size2*self.hidden_size2*2, 1)
         
         """Pairwise Interaction Prediction Module"""
-        self.pairwise_compound = nn.Linear(self.hidden_size1, self.hidden_size1)
-        self.pairwise_protein = nn.Linear(self.hidden_size1, self.hidden_size1)
+        self.pairwise_compound = nn.Linear(self.hidden_size3, self.hidden_size3)
+        self.pairwise_protein = nn.Linear(self.hidden_size3, self.hidden_size3)
         
     
     def mask_softmax(self,a, mask, dim=-1):
@@ -202,6 +202,7 @@ class Net(nn.Module):
         pairwise_c_feature = F.leaky_relu(self.pairwise_compound(comp_feature), 0.1)
         pairwise_p_feature = F.leaky_relu(self.pairwise_protein(prot_feature), 0.1)
         pairwise_pred = torch.sigmoid(torch.matmul(pairwise_c_feature, pairwise_p_feature.transpose(1,2)))
+        breakpoint()
         pairwise_mask = torch.matmul(vertex_mask.view(batch_size,-1,1), seq_mask.view(batch_size,1,-1))
         pairwise_pred = pairwise_pred*pairwise_mask
         
@@ -255,7 +256,7 @@ class Net(nn.Module):
         atom_feature, super_feature = self.GraphConv_module(batch_size, vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask)
         prot_feature = self.CNN_module(batch_size, seq_mask, sequence)
         prot_feature = torch.cat([prot_feature, msa_feature], dim=2)
-        breakpoint()
+
 
         atom_feature = self.upsample1(atom_feature)
         super_feature = self.upsample2(super_feature)
