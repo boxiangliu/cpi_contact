@@ -80,9 +80,9 @@ class Net(nn.Module):
         self.upsample2 = nn.Linear(self.hidden_size1, self.hidden_size3)
 
         """Affinity Prediction Module"""
-        self.super_final = nn.Linear(self.hidden_size1, self.hidden_size2)
-        self.c_final = nn.Linear(self.hidden_size1, self.hidden_size2)
-        self.p_final = nn.Linear(self.hidden_size1, self.hidden_size2)
+        self.super_final = nn.Linear(self.hidden_size3, self.hidden_size2)
+        self.c_final = nn.Linear(self.hidden_size3, self.hidden_size2)
+        self.p_final = nn.Linear(self.hidden_size3, self.hidden_size2)
         
         #DMA parameters
         self.mc0 = nn.Linear(hidden_size2, hidden_size2)
@@ -202,7 +202,6 @@ class Net(nn.Module):
         pairwise_c_feature = F.leaky_relu(self.pairwise_compound(comp_feature), 0.1)
         pairwise_p_feature = F.leaky_relu(self.pairwise_protein(prot_feature), 0.1)
         pairwise_pred = torch.sigmoid(torch.matmul(pairwise_c_feature, pairwise_p_feature.transpose(1,2)))
-        breakpoint()
         pairwise_mask = torch.matmul(vertex_mask.view(batch_size,-1,1), seq_mask.view(batch_size,1,-1))
         pairwise_pred = pairwise_pred*pairwise_mask
         
@@ -214,7 +213,7 @@ class Net(nn.Module):
         comp_feature = F.leaky_relu(self.c_final(comp_feature), 0.1)
         prot_feature = F.leaky_relu(self.p_final(prot_feature), 0.1)
         super_feature = F.leaky_relu(self.super_final(super_feature.view(batch_size,-1)), 0.1)
-        
+        breakpoint()
         cf, pf = self.dma_gru(batch_size, comp_feature, vertex_mask, prot_feature, seq_mask, pairwise_pred)
         
         cf = torch.cat([cf.view(batch_size,-1), super_feature.view(batch_size,-1)], dim=1)
