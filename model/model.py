@@ -26,7 +26,7 @@ class Net(nn.Module):
         self.init_bond_features = init_bond_features
         self.init_word_features = init_word_features
         """hyper part"""
-        GNN_depth, inner_CNN_depth, DMA_depth, k_head, kernel_size, hidden_size1, hidden_size2, hidden_size1 = params
+        GNN_depth, inner_CNN_depth, DMA_depth, k_head, kernel_size, hidden_size1, hidden_size2, hidden_size3 = params
         self.GNN_depth = GNN_depth
         self.inner_CNN_depth = inner_CNN_depth
         self.DMA_depth = DMA_depth
