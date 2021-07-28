@@ -165,7 +165,7 @@ if __name__ == "__main__":
     print('Clustering threshold:', clu_thre)
     print('Number of epochs:', n_epoch)
     print('Number of repeats:', n_rep)
-    print('Hyper-parameters:', [para_names[i]+':'+str(params[i]) for i in range(7)])
+    print('Hyper-parameters:', [para_names[i]+':'+str(params[i]) for i in range(8)])
     
     rep_all_list = []
     rep_avg_list = []
