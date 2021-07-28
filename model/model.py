@@ -231,11 +231,11 @@ class Net(nn.Module):
         
         m = c0*p0
         for DMA_iter in range(self.DMA_depth):
-            c_to_p = torch.matmul(pairwise_pred.transpose(1,2), F.tanh(self.c_to_p_transform[DMA_iter](comp_feats)))  # batch * n_residue * hidden
-            p_to_c = torch.matmul(pairwise_pred, F.tanh(self.p_to_c_transform[DMA_iter](prot_feats)))  # batch * n_vertex * hidden
+            c_to_p = torch.matmul(pairwise_pred.transpose(1,2), torch.tanh(self.c_to_p_transform[DMA_iter](comp_feats)))  # batch * n_residue * hidden
+            p_to_c = torch.matmul(pairwise_pred, torch.tanh(self.p_to_c_transform[DMA_iter](prot_feats)))  # batch * n_vertex * hidden
 
-            c_tmp = F.tanh(self.hc0[DMA_iter](comp_feats))*F.tanh(self.mc1[DMA_iter](m)).view(batch_size,1,-1)*p_to_c
-            p_tmp = F.tanh(self.hp0[DMA_iter](prot_feats))*F.tanh(self.mp1[DMA_iter](m)).view(batch_size,1,-1)*c_to_p
+            c_tmp = torch.tanh(self.hc0[DMA_iter](comp_feats))*torch.tanh(self.mc1[DMA_iter](m)).view(batch_size,1,-1)*p_to_c
+            p_tmp = torch.tanh(self.hp0[DMA_iter](prot_feats))*torch.tanh(self.mp1[DMA_iter](m)).view(batch_size,1,-1)*c_to_p
             
             c_att = self.mask_softmax(self.hc1[DMA_iter](c_tmp).view(batch_size,-1), vertex_mask.view(batch_size,-1)) 
             p_att = self.mask_softmax(self.hp1[DMA_iter](p_tmp).view(batch_size,-1), seq_mask.view(batch_size,-1))
