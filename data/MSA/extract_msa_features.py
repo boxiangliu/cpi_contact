@@ -240,7 +240,5 @@ def main(fn_list=None, debug=False, return_contacts=False):
 
     return status
 
-main()
-
 if __name__ == "__main__":
     status = main()

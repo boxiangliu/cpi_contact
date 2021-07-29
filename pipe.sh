@@ -1,35 +1,38 @@
-# Create dataset: 
-python dataset/get_dataset.py
-bash dataset/run_plip.sh ../data/pdb_files/ ../data/plip_results/
+##################
+# Data Generation 
+##################
+
+# Download data:
+python data/get_dataset.py
+
+# Use PLIP to get compound-protein interaction:
+bash data/run_plip.sh ../data/pdb_files/ ../data/plip_results/
+
+# Parse PLIP compound-protein interaction result: 
 python dataset/get_interaction.py
+
+# Align PDBBind and UniProt protein sequences:
 python dataset/get_alignment.py
+
+# Use alignment to adjust interacting residues: 
 python dataset/get_final_interaction.py
 
-################
-# Generate MSA
-################
+
+# Generate MSA features:
+# Generate fasta files:
+python data/MSA/hhblits_input.py ../data/results/out7_final_pairwise_interaction_dict ../processed_data/MSA/
+
 # Run hhblits:
-bash MSA/run_hhblits.sh /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA
+bash data/MSA/run_hhblits.sh ../processed_data/MSA ../processed_data/MSA
 
-# Generate input file lists:
-ls /mnt/scratch/boxiang/projects/cpi_contact/data/MSA/*a3m > /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list
-split -l 100 /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list_
+# Extract MSA features using MSA transformer:
+bash data/MSA/extract_msa_features.sh
 
-# Extract MSA features:
-# queues=TitanXx8,TitanXx8_mlong,TitanXx8_slong,M40x8_slong,M40x8_mlong,M40x8,P100,1080Ti,2080Ti_mlong,2080Ti,CPUx40
-queues=M40x8,M40x8_mlong,M40x8_slong
-for f in /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/fn_list_*; do
-    echo $f
-    sleep 1
-    sbatch -p $queues --job-name $(basename $f) --gres=gpu:1 --cpus-per-task 5 --wrap "python MSA/extract_msa_features.py --fn_list $f"
-done
+# Get alignment score:
+bash get_alignment_score.sh
 
-
-# Perform pairwise alignment across all PDBBind sequences:
-sw_dir=dataset/smith-waterman-src/
-fasta_fn=../data/results/out6.1_target_uniprot_pdb.fasta
-out_fn=../data/results/out6.1_target_uniprot_pdb_align.txt
-python2 ${sw_dir}/pyssw.py -l $sw_dir -c -p $fasta_fn $fasta_fn > $out_fn
+# Final processing and clustering for train-dev-test split:
+python preprocess_and_clustering.py
 
 
 python model/train.py IC50 new_compound 0.3
