@@ -1,17 +1,14 @@
 import sys
 import math
-import time
-import pickle
 import numpy as np
-
 import torch
 from torch import nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 import torch.optim as optim
 sys.path.append("/mnt/scratch/boxiang/projects/cpi_contact/scripts/model/")
+
 from pdbbind_utils import *
 from model import *
+
 
 # no RNN
 #train and evaluate

@@ -1,0 +1,18 @@
+TRAIN:
+  TRAIN_DATA: ""
+  VALID_DATA: ""
+  TEST_DATA: ""
+  BATCH_SIZE: 32
+  EPOCH: 30
+  MEASURE: IC50                # [IC50, KIKD]
+  SETTING: new_compound        # [new_compound, new_protein, new_new]
+  PROCESSED: /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/
+  BLOSUM62: /mnt/scratch/boxiang/projects/cpi_contact/scripts/blosum62.txt
+  GNN_DEPTH: 4
+  CNN_DEPTH: 2
+  DMA_DEPTH: 2
+  K_HEAD: 2
+  KERNEL_SIZE: 7
+  HIDDEN_SIZE_1: 128
+  HIDDEN_SIZE_2: 128 
+  HIDDEN_SIZE_3: 896

@@ -35,4 +35,8 @@ bash get_alignment_score.sh
 python preprocess_and_clustering.py
 
 
+
+############
+# Modeling
+############
 python model/train.py IC50 new_compound 0.3
