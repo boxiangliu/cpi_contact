@@ -179,7 +179,6 @@ if __name__ == "__main__":
             train_data = data_from_index(data_pack, train_idx)
             valid_data = data_from_index(data_pack, valid_idx)
             test_data = data_from_index(data_pack, test_idx)
-            breakpoint()
             test_performance, test_label, test_output = train_and_eval(train_data, valid_data, test_data, params, batch_size, n_epoch)
             rep_all_list.append(test_performance)
             fold_score_list.append(test_performance)
