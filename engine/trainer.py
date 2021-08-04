@@ -6,12 +6,15 @@ import os
 import sys
 import torch
 from torch.autograd import Variable
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
+sys.path.append(os.getcwd() + "/model/")
 from model import Net
+import math
 
 elem_list = ['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na', 'Ca', 'Fe', 'As', 'Al', 'I', 'B', 'V', 'K', 'Tl', 'Yb', 'Sb', 'Sn', 'Ag', 'Pd', 'Co', 'Se', 'Ti', 'Zn', 'H', 'Li', 'Ge', 'Cu', 'Au', 'Ni', 'Cd', 'In', 'Mn', 'Zr', 'Cr', 'Pt', 'Hg', 'Pb', 'W', 'Ru', 'Nb', 'Re', 'Te', 'Rh', 'Tc', 'Ba', 'Bi', 'Hf', 'Mo', 'U', 'Sm', 'Os', 'Ir', 'Ce','Gd','Ga','Cs', 'unknown']
 atom_fdim = len(elem_list) + 6 + 6 + 6 + 1
 bond_fdim = 6
-CFG = "../config/config.yaml"
+CFG = "config/config.yaml"
 
 class Trainer(object):
     def __init__(self, cfg):
@@ -27,7 +30,7 @@ class Trainer(object):
 
         blosum_dict = load_blosum62(train_cfg.BLOSUM62)
         init_A, init_B, init_W = loading_emb(
-            processed_dir=train_cfg.PROCSSED, 
+            processed_dir=train_cfg.PROCESSED, 
             measure=train_cfg.MEASURE, 
             blosum_dict=blosum_dict)
 
@@ -40,8 +43,17 @@ class Trainer(object):
                   train_cfg.HIDDEN_SIZE_2, 
                   train_cfg.HIDDEN_SIZE_3]
 
-        net = Net(init_A, init_B, init_W, params)
-        net.cuda()
+        net = Net(init_A, init_B, init_W, params).cuda()
+        net.apply(weights_init)
+        total_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
+        sys.stderr.write("Total parameters: {}".format(total_params))
+        self.net = net
+
+        self.criterion1 = nn.MSELoss()
+        self.criterion2 = Masked_BCELoss()
+
+        self.optimizer = optim.Adam(filter(lambda p: p.requires_grad, net.parameters()), lr=0.0005, weight_decay=0, amsgrad=True)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
 
     def init_logging(self):
         pass
@@ -105,4 +117,23 @@ def load_blosum62(fn):
             split_line = line.strip("\n").split()
             blosum_dict[split_line[0]] = np.array(split_line[1:], dtype=float)
     return blosum_dict
+
+
+#Model parameter intializer
+def weights_init(m):
+    if isinstance(m, nn.Conv1d) or isinstance(m,nn.Linear):
+        nn.init.normal_(m.weight.data, mean=0, std=min(1.0 / math.sqrt(m.weight.data.shape[-1]), 0.1))
+        nn.init.constant_(m.bias, 0)
+
+class Masked_BCELoss(nn.Module):
+    def __init__(self):
+        super(Masked_BCELoss, self).__init__()
+        self.criterion = nn.BCELoss(reduce=False)
+    def forward(self, pred, label, pairwise_mask, vertex_mask, seq_mask):
+        batch_size = pred.size(0)
+        loss_all = self.criterion(pred, label)
+        loss_mask = torch.matmul(vertex_mask.view(batch_size,-1,1), seq_mask.view(batch_size,1,-1))*pairwise_mask.view(-1, 1, 1)
+        loss = torch.sum(loss_all*loss_mask) / torch.sum(pairwise_mask).clamp(min=1e-10)
+        return loss
+
 
