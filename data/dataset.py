@@ -314,13 +314,13 @@ data_pack, train_idx_list, valid_idx_list, test_idx_list = \
               clu_thre=0.3,
               n_fold=5)
 
-fold = 0
-train_data = data_from_index(data_pack, train_idx_list[fold])
-valid_data = data_from_index(data_pack, valid_idx_list[fold])
-test_data = data_from_index(data_pack, test_idx_list[fold])
+# fold = 0
+# train_data = data_from_index(data_pack, train_idx_list[fold])
+# valid_data = data_from_index(data_pack, valid_idx_list[fold])
+# test_data = data_from_index(data_pack, test_idx_list[fold])
 
-train_data = CPIDataset(train_data)
+# train_data = CPIDataset(train_data)
 
-data_loader = DataLoader(train_data, batch_size=16, collate_fn=collate_cpi)
-data_loader = iter(data_loader)
-batch = next(data_loader)
+# data_loader = DataLoader(train_data, batch_size=16, collate_fn=collate_cpi)
+# data_loader = iter(data_loader)
+# batch = next(data_loader)

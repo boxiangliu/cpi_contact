@@ -6,11 +6,14 @@ import os
 import sys
 import torch
 from torch.autograd import Variable
+import torch.nn as nn
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 sys.path.append(os.getcwd() + "/model/")
 from model import Net
 import math
 from torch.utils.data import Dataset
+import time
+from tensorboardX import SummaryWriter
 
 
 elem_list = ['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na', 'Ca', 'Fe', 'As', 'Al', 'I', 'B', 'V', 'K', 'Tl', 'Yb', 'Sb', 'Sn', 'Ag', 'Pd', 'Co', 'Se', 'Ti', 'Zn', 'H', 'Li', 'Ge', 'Cu', 'Au', 'Ni', 'Cd', 'In', 'Mn', 'Zr', 'Cr', 'Pt', 'Hg', 'Pb', 'W', 'Ru', 'Nb', 'Re', 'Te', 'Rh', 'Tc', 'Ba', 'Bi', 'Hf', 'Mo', 'U', 'Sm', 'Os', 'Ir', 'Ce','Gd','Ga','Cs', 'unknown']
@@ -19,13 +22,23 @@ bond_fdim = 6
 CFG = "config/config.yaml"
 
 class Trainer(object):
-    def __init__(self, cfg， train_data, valid_data, test_data):
-        self.setup(cfg)
+    def __init__(self, args, train_data, valid_data, test_data):
+        self.args = args
+        self.setup()
+        self.train_data = train_data
+        self.valid_data = valid_data
+        self.test_data = test_data
         self.init_model()
 
-    def setup(self, cfg):
-        with open(cfg) as f:
+    def setup(self):
+        with open(self.args.cfg_file) as f:
             self.cfg = edict(yaml.full_load(f))
+
+        if not os.path.exists(self.args.save_path):
+            os.makedirs(self.args.save_path)
+
+        self.device = torch.device("cuda")
+        self.summary_writer = SummaryWriter(self.args.save_path)
 
     def init_model(self):
         train_cfg = self.cfg.TRAIN
@@ -58,26 +71,231 @@ class Trainer(object):
         self.scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
 
     def init_data(self):
-        # train_cfg = self.cfg.TRAIN
-        # data_pack, train_idx_list, valid_idx_list, test_idx_list = \
-        #     load_data(processed_dir=train_cfg.PROCESSED,
-        #               measure=train_cfg.MEASURE,
-        #               setting=train_cfg.SETTING,
-        #               clu_thre=train_cfg.CLU_THRE,
-        #               n_fold=train_cfg.N_FOLD)
+        self.train_data = CPIDataset(train_data)
+        self.train_loader = Dataloader(train_data, batch_size=self.cfg.TRAIN.batch_size, collate_fn=collate_cpi)
+        self.train_iter = iter(train_loader)
 
+        self.valid_data = CPIDataset(valid_data)
+        self.valid_loader = DataLoader(valid_data, batch_size=self.cfg.TRAIN.batch_size, collate_fn=collate_cpi)
 
-    def init_logging(self):
-        pass
+    def init_log(self):
+        self.summary = {
+            "step": 0,
+            "log_step": 0,
+            "epoch": 1,
+            "loss_sum": 0.0,
+            "loss_pairwise_sum": 0.0,
+            "loss_aff_sum": 0.0,
+            "loss_dev": 0.0,
+            "loss_pairwise_dev": 0.0,
+            "loss_aff_dev": 0.0
+            "loss_dev_best": float("inf"),
+            "loss_pairwise_dev_best": float("inf"),
+            "loss_aff_dev_best": float("inf")
+        }
+        self.time_stamp = time.time()
+
+    def reset_log(self):
+        self.summary["log_step"] = 0
+        self.summary["loss_sum"] = 0.0
+        self.summary["loss_pairwise_sum"] = 0.0
+        self.summary["loss_aff_sum"] = 0.0
+
+    def logging(self, mode="Train"):
+        time_elapsed = time.time() - self.time_stamp
+        self.time_stamp = time.time()
+
+        if mode == "Train":
+            log_step = self.summary["log_step"]
+            loss = self.summary["loss_sum"] / log_step
+            loss_pairwise = self.summary["loss_pairwise_sum"] / log_step
+            loss_aff = self.summary["loss_aff_sum"] / log_step
+
+            logging.info(
+                "{}, Train, Epoch: {}, Step: {}, Loss: {:.3f}, "
+                "PairLoss: {:.3f}, AffLoss: {:.3f}, Runtime: {:.2f} s"
+                .format(time.strftime("%Y-%m-%d %H:%M:%S"),
+                        self.summary["epoch"], self.summary["step"],
+                        loss, loss_pairwise, loss_aff, time_elapsed))
+
+        elif mode == "Dev":
+            logging.info(
+                "{}, Dev, Epoch: {}, Step: {}, Loss: {:.3f}, "
+                "PairLoss: {:.3f}, AffLoss: {:.3f}, Runtime: {:.2f} s"
+                .format(time.strftime("%Y-%m-%d %H:%M:%S"),
+                        self.summary["epoch"], self.summary["step"],
+                        self.summary["loss_dev"], self.summary["loss_pairwise_dev"],
+                        self.summary["loss_aff_dev"], time_elapsed))
 
     def train_step(self):
-        pass
+        try:
+            vertex_mask, vertex, edge, atom_adj, \
+            bond_adj, nbs_mask, seq_mask, sequence, \
+            msa_feature, affinity_label, pairwise_mask, \
+            pairwise_label = next(self.train_iter)
+
+        except StopIteration:
+            self.summary['epoch'] += 1
+            self.train_iter = iter(self.train_loader)
+            vertex_mask, vertex, edge, atom_adj, \
+            bond_adj, nbs_mask, seq_mask, sequence, \
+            msa_feature, affinity_label, pairwise_mask, \
+            pairwise_label = next(self.train_iter)
+
+        vertex_mask = vertex_mask.to(self.device)
+        vertex = vertex.to(self.device)
+        edge = edge.to(self.device)
+        atom_adj = atom_adj.to(self.device)
+        bond_adj = bond_adj.to(self.device)
+        nbs_mask = nbs_mask.to(self.device)
+        seq_mask = seq_mask.to(self.device)
+        sequence = sequence.to(self.device)
+        msa_feature = msa_feature.to(self.device)
+        affinity_label = affinity_label.to(self.device)
+        pairwise_mask = pairwise_mask.to(self.device)
+        pairwise_label = pairwise_label.to(self.device)
+
+
+        affinity_pred, pairwise_pred = self.net(
+            vertex_mask, vertex, edge, \
+            atom_adj, bond_adj, nbs_mask, \
+            seq_mask, sequence, msa_feature)
+
+        loss_aff = self.criterion1(affinity_pred, affinity_label)
+        loss_pairwise = self.criterion2(pairwise_pred, pairwise_label, pairwise_mask, vertex_mask, seq_mask)
+        loss = loss_aff + 0.1*loss_pairwise
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        nn.utils.clip_grad_norm_(net.parameters(), 5)
+        optimizer.step()
+
+        self.summary["loss_sum"] += loss_aff.item()
+        self.summary["loss_pairwise_sum"] += loss_pairwise.item()
+        self.summary["loss_aff_sum"] += loss_aff.item()
+        self.summary["step"] += 1
+        self.summary["log_step"] += 1
 
     def dev_epoch(self):
-        pass
+        self.time_stamp = time.time()
+        torch.set_grad_enabled(False)
+        self.net.eval()
 
-    def save_model(self):
-        pass
+        steps = len(self.valid_loader)
+        valid_iter = iter(self.valid_loader)
+        loss_sum = 0.0
+        loss_pairwise_sum = 0.0
+        loss_aff_sum = 0.0
+
+        for step in range(steps):
+            (vertex_mask, vertex, edge, atom_adj, 
+             bond_adj, nbs_mask, seq_mask, sequence, 
+             msa_feature, affinity_label, pairwise_mask, 
+             pairwise_label) = next(self.train_iter)
+
+            vertex_mask = vertex_mask.to(self.device)
+            vertex = vertex.to(self.device)
+            edge = edge.to(self.device)
+            atom_adj = atom_adj.to(self.device)
+            bond_adj = bond_adj.to(self.device)
+            nbs_mask = nbs_mask.to(self.device)
+            seq_mask = seq_mask.to(self.device)
+            sequence = sequence.to(self.device)
+            msa_feature = msa_feature.to(self.device)
+            affinity_label = affinity_label.to(self.device)
+            pairwise_mask = pairwise_mask.to(self.device)
+            pairwise_label = pairwise_label.to(self.device)
+
+            affinity_pred, pairwise_pred = self.net(
+                vertex_mask, vertex, edge, \
+                atom_adj, bond_adj, nbs_mask, \
+                seq_mask, sequence, msa_feature)
+
+            loss_aff = self.criterion1(affinity_pred, affinity_label)
+            loss_pairwise = self.criterion2(pairwise_pred, pairwise_label, pairwise_mask, vertex_mask, seq_mask)
+            loss = loss_aff + 0.1*loss_pairwise
+
+            loss_sum += loss.item()
+            loss_pairwise_sum += loss.item()
+            loss_aff_sum += loss.item()
+
+        self.summary["loss_dev"] = loss_sum / steps
+        self.summary["loss_pairwise_dev"] = loss_pairwise_sum / steps
+        self.summary["loss_aff_dev"] = loss_aff_sum / steps
+
+        torch.set_grad_enabled(True)
+        self.net.train()
+
+    def write_summary(self, mode="Train"):
+        if mode == "Train":
+            self.summary_writer.add_scalar(
+                "Train/loss",
+                self.summary["loss_sum"] / self.summary["log_step"],
+                self.summary["step"])
+            self.summary_writer.add_scalar(
+                "Train/loss_pairwise",
+                self.summary["loss_pairwise_sum"] / self.summary["log_step"],
+                self.summary["step"])
+            self.summary_writer.add_scalar(
+                "Train/loss_aff",
+                self.summary["loss_aff_sum"] / self.summary["log_step"],
+                self.summary["step"])
+
+        elif mode == "Dev":
+            self.summary_writer.add_scalar(
+                "Dev/loss",
+                self.summary["loss_dev"],
+                self.summary["step"])
+            self.summary_writer.add_scalar(
+                "Dev/loss_pairwise",
+                self.summary["loss_pairwise_dev"],
+                self.summary["step"])
+            self.summary_writer.add_scalar(
+                "Dev/loss_aff",
+                self.summary["loss_aff_dev"],
+                self.summary["step"])
+
+
+    def save_model(self, mode="Train"):
+        if mode == "Train":
+            torch.save(
+                {
+                    "epoch": self.summary["epoch"],
+                    "step": self.summary["step"],
+                    "loss_dev_best": self.summary["loss_dev_best"],
+                    "loss_pairwise_dev_best": self.summary["loss_pairwise_dev_best"],
+                    "loss_aff_dev_best": self.summary["loss_aff_dev_best"]
+                },
+                os.path.join(self.args.save_path, "train.ckpt"))
+        elif model == "Dev":
+            save_best = False
+            if self.summary["loss_dev"].mean() < self.summary["loss_dev_best"]:
+                self.summary["loss_dev_best"] = self.summary["loss_dev"].mean()
+                self.summary["loss_pairwise_dev_best"] = self.summary["loss_pairwise_dev"].mean()
+                self.summary["loss_aff_dev_best"] = self.summary["loss_aff_dev"].mean()
+                save_best = True
+
+            if save_best:
+                torch.save(
+                    {
+                        "epoch": self.summary["epoch"],
+                        "step": self.summary["step"],
+                        "loss_dev_best": self.summary["loss_dev_best"],
+                        "loss_pairwise_dev_best": self.summary["loss_pairwise_dev_best"],
+                        "loss_aff_dev_best": self.summary["loss_aff_dev_best"]
+                    },
+                    os.path.join(self.args.save_path, "best.ckpt"))
+
+                logging.info(
+                    "{}, Best, Epoch: {}, Step: {}, Loss: {:.3f}, "
+                    "PairLoss: {:.3f}, AffLoss: {:.3f}"
+                    .format(time.strftime("%Y-%m-%d %H:%M:%S"),
+                            self.summary["epoch"], self.summary["step"],
+                            self.summary["loss_dev"], self.summary["loss_pairwise_dev"],
+                            self.summary["loss_aff_dev"]))
+
+    def close(self):
+        self.summary_writer.close()
 
 trainer = Trainer(CFG)
 
