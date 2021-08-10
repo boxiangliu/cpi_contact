@@ -283,10 +283,10 @@ class Trainer(object):
         elif mode == "Dev":
             save_best = False
             breakpoint()
-            if self.summary["loss_dev"].mean() < self.summary["loss_dev_best"]:
-                self.summary["loss_dev_best"] = self.summary["loss_dev"].mean()
-                self.summary["loss_pairwise_dev_best"] = self.summary["loss_pairwise_dev"].mean()
-                self.summary["loss_aff_dev_best"] = self.summary["loss_aff_dev"].mean()
+            if self.summary["loss_dev"] < self.summary["loss_dev_best"]:
+                self.summary["loss_dev_best"] = self.summary["loss_dev"]
+                self.summary["loss_pairwise_dev_best"] = self.summary["loss_pairwise_dev"]
+                self.summary["loss_aff_dev_best"] = self.summary["loss_aff_dev"]
                 save_best = True
 
             if save_best:
