@@ -120,7 +120,6 @@ class Net(nn.Module):
         n_vertex = vertex_mask.size(1)
         
         # initial features
-        breakpoint()
         vertex_initial = torch.index_select(self.init_atom_features, 0, vertex.view(-1))
         vertex_initial = vertex_initial.view(batch_size, -1, atom_fdim)
         edge_initial = torch.index_select(self.init_bond_features, 0, edge.view(-1))
