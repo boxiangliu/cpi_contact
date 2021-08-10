@@ -49,17 +49,21 @@ class Trainer(object):
 
         blosum_dict = load_blosum62(train_cfg.BLOSUM62)
         init_A, init_B, init_W = loading_emb(
-            processed_dir=train_cfg.PROCESSED, 
-            measure=train_cfg.MEASURE, 
+            processed_dir=train_cfg.PROCESSED,
+            measure=train_cfg.MEASURE,
             blosum_dict=blosum_dict)
 
-        params = [train_cfg.GNN_DEPTH, 
-                  train_cfg.CNN_DEPTH, 
-                  train_cfg.DMA_DEPTH, 
-                  train_cfg.K_HEAD, 
-                  train_cfg.KERNEL_SIZE, 
-                  train_cfg.HIDDEN_SIZE_1, 
-                  train_cfg.HIDDEN_SIZE_2, 
+        init_A = init_A.to(self.device)
+        init_B = init_B.to(self.device)
+        init_W = init_W.to(self.device)
+
+        params = [train_cfg.GNN_DEPTH,
+                  train_cfg.CNN_DEPTH,
+                  train_cfg.DMA_DEPTH,
+                  train_cfg.K_HEAD,
+                  train_cfg.KERNEL_SIZE,
+                  train_cfg.HIDDEN_SIZE_1,
+                  train_cfg.HIDDEN_SIZE_2,
                   train_cfg.HIDDEN_SIZE_3]
 
         self.net = Net(init_A, init_B, init_W, params).to(self.device)
@@ -333,8 +337,9 @@ def loading_emb(processed_dir, measure, blosum_dict):
         init_word_features[value] = blosum_dict[key]
     init_word_features = torch.cat([torch.zeros(1,20), torch.FloatTensor(init_word_features)], dim=0)
 
-    for features in [init_atom_features, init_bond_features, init_word_features]:
-        features = Variable(torch.FloatTensor(features)).cuda()
+    init_atom_features = torch.FloatTensor(init_atom_features)
+    init_bond_features = torch.FloatTensor(init_bond_features)
+    init_word_features = torch.FloatTensor(init_word_features)
 
     return init_atom_features, init_bond_features, init_word_features
 
