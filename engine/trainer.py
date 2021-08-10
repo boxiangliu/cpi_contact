@@ -72,7 +72,7 @@ class Trainer(object):
 
     def init_data(self):
         self.train_data = CPIDataset(train_data)
-        self.train_loader = Dataloader(train_data, batch_size=self.cfg.TRAIN.batch_size, collate_fn=collate_cpi)
+        self.train_loader = DataLoader(train_data, batch_size=self.cfg.TRAIN.batch_size, collate_fn=collate_cpi)
         self.train_iter = iter(train_loader)
 
         self.valid_data = CPIDataset(valid_data)

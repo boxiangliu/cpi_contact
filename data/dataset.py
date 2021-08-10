@@ -307,12 +307,12 @@ def collate_cpi(batch):
             pairwise_label]
 
 
-data_pack, train_idx_list, valid_idx_list, test_idx_list = \
-    load_data(processed_dir="/mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/",
-              measure="IC50",
-              setting="new_compound",
-              clu_thre=0.3,
-              n_fold=5)
+# data_pack, train_idx_list, valid_idx_list, test_idx_list = \
+#     load_data(processed_dir="/mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/",
+#               measure="IC50",
+#               setting="new_compound",
+#               clu_thre=0.3,
+#               n_fold=5)
 
 # fold = 0
 # train_data = data_from_index(data_pack, train_idx_list[fold])
