@@ -75,12 +75,12 @@ class Trainer(object):
         self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=20, gamma=0.5)
 
     def init_data(self):
-        self.train_data = CPIDataset(train_data)
-        self.train_loader = DataLoader(train_data, batch_size=self.cfg.TRAIN.batch_size, collate_fn=collate_cpi)
+        self.train_dataset = CPIDataset(self.train_data)
+        self.train_loader = DataLoader(self.train_dataset, batch_size=self.cfg.TRAIN.BATCH_SIZE, collate_fn=collate_cpi)
         self.train_iter = iter(train_loader)
 
-        self.valid_data = CPIDataset(valid_data)
-        self.valid_loader = DataLoader(valid_data, batch_size=self.cfg.TRAIN.batch_size, collate_fn=collate_cpi)
+        self.valid_dataset = CPIDataset(self.valid_data)
+        self.valid_loader = DataLoader(self.valid_dataset, batch_size=self.cfg.TRAIN.BATCH_SIZE, collate_fn=collate_cpi)
 
     def init_log(self):
         self.summary = {
