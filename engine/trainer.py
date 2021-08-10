@@ -204,7 +204,7 @@ class Trainer(object):
             (vertex_mask, vertex, edge, atom_adj, 
              bond_adj, nbs_mask, seq_mask, sequence, 
              msa_feature, affinity_label, pairwise_mask, 
-             pairwise_label) = next(self.valid_iter)
+             pairwise_label) = next(valid_iter)
 
             vertex_mask = vertex_mask.to(self.device)
             vertex = vertex.to(self.device)
