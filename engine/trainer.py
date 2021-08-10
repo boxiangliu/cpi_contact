@@ -297,9 +297,6 @@ class Trainer(object):
     def close(self):
         self.summary_writer.close()
 
-trainer = Trainer(CFG)
-
-
 
 def loading_emb(processed_dir, measure, blosum_dict):
     fn = os.path.join(processed_dir, "pdbbind_all_atom_dict_{}".format(measure))
