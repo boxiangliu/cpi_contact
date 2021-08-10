@@ -88,7 +88,7 @@ class Trainer(object):
             "loss_aff_sum": 0.0,
             "loss_dev": 0.0,
             "loss_pairwise_dev": 0.0,
-            "loss_aff_dev": 0.0
+            "loss_aff_dev": 0.0,
             "loss_dev_best": float("inf"),
             "loss_pairwise_dev_best": float("inf"),
             "loss_aff_dev_best": float("inf")
