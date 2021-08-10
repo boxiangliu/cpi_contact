@@ -60,29 +60,29 @@ trainer = Trainer(args, train_data, valid_data, test_data)
 
 
 
-    epoch_steps_train = len(trainer.train_loader)
-    total_steps_train = epoch_steps_train * cfg.TRAIN.EPOCH
-    start_step = trainer.summary["step"]
+epoch_steps_train = len(trainer.train_loader)
+total_steps_train = epoch_steps_train * cfg.TRAIN.EPOCH
+start_step = trainer.summary["step"]
 
-    for step in range(start_step, total_steps_train):
-        trainer.train_step()
+for step in range(start_step, total_steps_train):
+    trainer.train_step()
 
-        if (step + 1) % cfg.TRAIN.LOG_EVERY == 0:
-            trainer.logging(mode="Train")
-            trainer.write_summary(mode="Train")
-            trainer.reset_log()
+    if (step + 1) % cfg.TRAIN.LOG_EVERY == 0:
+        trainer.logging(mode="Train")
+        trainer.write_summary(mode="Train")
+        trainer.reset_log()
 
-        if (step + 1) % cfg.TRAIN.DEV_EVERY == 0:
-            trainer.dev_epoch()
-            trainer.logging(mode="Dev")
-            trainer.write_summary(mode="Dev")
-            trainer.save_model(mode="Train")
-            trainer.save_model(mode="Dev")
+    if (step + 1) % cfg.TRAIN.DEV_EVERY == 0:
+        trainer.dev_epoch()
+        trainer.logging(mode="Dev")
+        trainer.write_summary(mode="Dev")
+        trainer.save_model(mode="Train")
+        trainer.save_model(mode="Dev")
 
-        if (step + 1) % epoch_steps_train == 0:
-            trainer.scheduler.step()
+    if (step + 1) % epoch_steps_train == 0:
+        trainer.scheduler.step()
 
-    trainer.close()
+trainer.close()
 
 def main():
     args = parser.parse_args()
