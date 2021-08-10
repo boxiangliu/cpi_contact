@@ -16,6 +16,8 @@ import time
 from tensorboardX import SummaryWriter
 from torch import optim
 from data.dataset import CPIDataset, collate_cpi
+import logging
+
 
 elem_list = ['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na', 'Ca', 'Fe', 'As', 'Al', 'I', 'B', 'V', 'K', 'Tl', 'Yb', 'Sb', 'Sn', 'Ag', 'Pd', 'Co', 'Se', 'Ti', 'Zn', 'H', 'Li', 'Ge', 'Cu', 'Au', 'Ni', 'Cd', 'In', 'Mn', 'Zr', 'Cr', 'Pt', 'Hg', 'Pb', 'W', 'Ru', 'Nb', 'Re', 'Te', 'Rh', 'Tc', 'Ba', 'Bi', 'Hf', 'Mo', 'U', 'Sm', 'Os', 'Ir', 'Ce','Gd','Ga','Cs', 'unknown']
 atom_fdim = len(elem_list) + 6 + 6 + 6 + 1
@@ -43,6 +45,11 @@ class Trainer(object):
 
         self.device = torch.device("cuda")
         self.summary_writer = SummaryWriter(self.args.save_path)
+        if self.args.logtofile is True:
+            logging.basicConfig(filename=self.args.save_path + "/log.txt",
+                                filemode="a+", level=logging.INFO)
+        else:
+            logging.basicConfig(level=logging.INFO)
 
     def init_model(self):
         train_cfg = self.cfg.TRAIN
