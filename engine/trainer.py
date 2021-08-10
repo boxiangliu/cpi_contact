@@ -174,7 +174,7 @@ class Trainer(object):
         self.optimizer.zero_grad()
         loss.backward()
         nn.utils.clip_grad_norm_(self.net.parameters(), 5)
-        optimizer.step()
+        self.optimizer.step()
 
         self.summary["loss_sum"] += loss_aff.item()
         self.summary["loss_pairwise_sum"] += loss_pairwise.item()

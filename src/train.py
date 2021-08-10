@@ -79,6 +79,9 @@ trainer.train_step()
             trainer.save_model(mode="Train")
             trainer.save_model(mode="Dev")
 
+        if (step + 1) % epoch_steps_train == 0:
+            trainer.scheduler.step()
+
     trainer.close()
 
 def main():
