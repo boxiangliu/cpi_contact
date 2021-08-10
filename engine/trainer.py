@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 sys.path.append(os.getcwd() + "/model/")
 from model import Net
 import math
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import time
 from tensorboardX import SummaryWriter
 from torch import optim
