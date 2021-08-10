@@ -62,11 +62,10 @@ class Trainer(object):
                   train_cfg.HIDDEN_SIZE_2, 
                   train_cfg.HIDDEN_SIZE_3]
 
-        net = Net(init_A, init_B, init_W, params).cuda()
-        net.apply(weights_init)
-        total_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
-        sys.stderr.write("Total parameters: {}".format(total_params))
-        self.net = net
+        self.net = Net(init_A, init_B, init_W, params).to(self.device)
+        self.net.apply(weights_init)
+        total_params = sum(p.numel() for p in self.net.parameters() if p.requires_grad)
+        sys.stderr.write("Total parameters: {}\n".format(total_params))
 
         self.criterion1 = nn.MSELoss()
         self.criterion2 = Masked_BCELoss()
@@ -133,18 +132,18 @@ class Trainer(object):
 
     def train_step(self):
         try:
-            vertex_mask, vertex, edge, atom_adj, \
-            bond_adj, nbs_mask, seq_mask, sequence, \
-            msa_feature, affinity_label, pairwise_mask, \
-            pairwise_label = next(self.train_iter)
+            (vertex_mask, vertex, edge, atom_adj,
+            bond_adj, nbs_mask, seq_mask, sequence,
+            msa_feature, affinity_label, pairwise_mask,
+            pairwise_label) = next(self.train_iter)
 
         except StopIteration:
             self.summary['epoch'] += 1
             self.train_iter = iter(self.train_loader)
-            vertex_mask, vertex, edge, atom_adj, \
-            bond_adj, nbs_mask, seq_mask, sequence, \
-            msa_feature, affinity_label, pairwise_mask, \
-            pairwise_label = next(self.train_iter)
+            (vertex_mask, vertex, edge, atom_adj, 
+            bond_adj, nbs_mask, seq_mask, sequence, 
+            msa_feature, affinity_label, pairwise_mask, 
+            pairwise_label) = next(self.train_iter)
 
         vertex_mask = vertex_mask.to(self.device)
         vertex = vertex.to(self.device)
@@ -158,11 +157,11 @@ class Trainer(object):
         affinity_label = affinity_label.to(self.device)
         pairwise_mask = pairwise_mask.to(self.device)
         pairwise_label = pairwise_label.to(self.device)
-
+        breakpoint()
 
         affinity_pred, pairwise_pred = self.net(
-            vertex_mask, vertex, edge, \
-            atom_adj, bond_adj, nbs_mask, \
+            vertex_mask, vertex, edge, 
+            atom_adj, bond_adj, nbs_mask, 
             seq_mask, sequence, msa_feature)
 
         loss_aff = self.criterion1(affinity_pred, affinity_label)
