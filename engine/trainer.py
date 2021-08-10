@@ -280,7 +280,7 @@ class Trainer(object):
                     "loss_aff_dev_best": self.summary["loss_aff_dev_best"]
                 },
                 os.path.join(self.args.save_path, "train.ckpt"))
-        elif model == "Dev":
+        elif mode == "Dev":
             save_best = False
             if self.summary["loss_dev"].mean() < self.summary["loss_dev_best"]:
                 self.summary["loss_dev_best"] = self.summary["loss_dev"].mean()

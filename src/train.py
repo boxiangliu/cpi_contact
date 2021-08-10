@@ -35,6 +35,7 @@ class DummyArgs(object):
     def __init__(self):
         self.cfg_file = "config/config.yaml"
         self.save_path = "/mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/test/"
+        self.logtofile = True
 
 args = DummyArgs()
 
