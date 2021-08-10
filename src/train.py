@@ -67,7 +67,7 @@ def run(args):
         if (step + 1) % cfg.TRAIN.LOG_EVERY == 0:
             trainer.logging(mode="Train")
             trainer.write_summary(mode="Train")
-            trainer.log_init()
+            trainer.reset_log()
 
         if (step + 1) % cfg.TRAIN.DEV_EVERY == 0:
             trainer.dev_epoch()

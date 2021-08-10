@@ -25,11 +25,14 @@ CFG = "config/config.yaml"
 class Trainer(object):
     def __init__(self, args, train_data, valid_data, test_data):
         self.args = args
-        self.setup()
         self.train_data = train_data
         self.valid_data = valid_data
         self.test_data = test_data
+
+        self.setup()
         self.init_model()
+        self.init_data()
+        self.init_log()
 
     def setup(self):
         with open(self.args.cfg_file) as f:
