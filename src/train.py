@@ -3,6 +3,8 @@ import os
 import argparse
 from data.dataset import load_data, data_from_index
 from engine.trainer import Trainer
+import yaml
+from easydict import EasyDict as edict
 
 parser = argparse.ArgumentParser(description="Train model")
 parser.add_argument("cfg_file",
@@ -30,21 +32,30 @@ parser.add_argument("--logtofile",
 
 
 class DummyArgs(object):
-    def __init__():
+    def __init__(self):
         self.cfg_file = "config/config.yaml"
         self.save_path = "/mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/test/"
 
 args = DummyArgs()
 
 def run(args):
-    trainer = Trainer(args)
-    cfg = trainer.cfg
+    with open(args.cfg_file) as f:
+        cfg = edict(yaml.full_load(f))
+
+
     data_pack, train_idx_list, valid_idx_list, test_idx_list = \
         load_data(processed_dir=cfg.TRAIN.PROCESSED,
               measure=cfg.TRAIN.MEASURE,
               setting=cfg.TRAIN.SETTING,
               clu_thre=cfg.TRAIN.CLU_THRE,
               n_fold=cfg.TRAIN.N_FOLD)
+
+    fold = 0
+    train_data = data_from_index(data_pack, train_idx_list[fold])
+    valid_data = data_from_index(data_pack, valid_idx_list[fold])
+    test_data = data_from_index(data_pack, test_idx_list[fold])
+
+    trainer = Trainer(args, train_data, valid_data, test_data)
 
     epoch_steps_train = len(trainer.train_loader)
     total_steps_train = epoch_steps_train * cfg.TRAIN.EPOCH
