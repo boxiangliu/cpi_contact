@@ -58,7 +58,7 @@ test_data = data_from_index(data_pack, test_idx_list[fold])
 trainer = Trainer(args, train_data, valid_data, test_data)
 
 
-trainer.train_step()
+
 
     epoch_steps_train = len(trainer.train_loader)
     total_steps_train = epoch_steps_train * cfg.TRAIN.EPOCH
