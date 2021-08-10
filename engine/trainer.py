@@ -282,7 +282,6 @@ class Trainer(object):
                 os.path.join(self.args.save_path, "train.ckpt"))
         elif mode == "Dev":
             save_best = False
-            breakpoint()
             if self.summary["loss_dev"] < self.summary["loss_dev_best"]:
                 self.summary["loss_dev_best"] = self.summary["loss_dev"]
                 self.summary["loss_pairwise_dev_best"] = self.summary["loss_pairwise_dev"]
