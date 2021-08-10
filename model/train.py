@@ -49,7 +49,7 @@ def train_and_eval(train_data, valid_data, test_data, params, batch_size=32, num
             
             inputs = [input_vertex, input_edge, input_atom_adj, input_bond_adj, input_num_nbs, input_seq, msa_feature]
             vertex_mask, vertex, edge, atom_adj, bond_adj, nbs_mask, seq_mask, sequence, msa_feature = batch_data_process(inputs)
-            breakpoint()
+
             affinity_label = torch.FloatTensor(affinity_label).cuda()
             pairwise_mask = torch.FloatTensor(pairwise_mask).cuda()
             pairwise_label = torch.FloatTensor(pad_label_2d(pairwise_label, vertex, sequence)).cuda()

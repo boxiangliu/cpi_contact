@@ -161,7 +161,6 @@ class Trainer(object):
         affinity_label = affinity_label.to(self.device)
         pairwise_mask = pairwise_mask.to(self.device)
         pairwise_label = pairwise_label.to(self.device)
-        breakpoint()
 
         affinity_pred, pairwise_pred = self.net(
             vertex_mask, vertex, edge, 
