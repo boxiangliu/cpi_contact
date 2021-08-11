@@ -83,6 +83,8 @@ for step in range(start_step, total_steps_train):
     if (step + 1) % epoch_steps_train == 0:
         trainer.scheduler.step()
 
+sys.stderr.write("Finished training\n")
+trainer.logging(mode="Dev")
 trainer.close()
 
 def main():

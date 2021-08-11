@@ -163,7 +163,8 @@ def data_from_index(data_pack, idx_list):
 
     fa, fb, anb, bnb, nbs_mat, seq_input = [data_pack[i][idx_list] for i in range(6)]
     aff_label = data_pack[6][idx_list].astype(float).reshape(-1,1)
-    pairwise_mask = data_pack[9][idx_list].astype(float).reshape(-1,1)
+    # pairwise_mask is 1 iff there is at least one non-zero entry in pairwise_label
+    pairwise_mask = data_pack[9][idx_list].astype(float).reshape(-1,1) 
     pairwise_label = data_pack[10][idx_list]
     msa_feature = data_pack[11][idx_list]
 

@@ -17,6 +17,7 @@ from tensorboardX import SummaryWriter
 from torch import optim
 from data.dataset import CPIDataset, collate_cpi
 import logging
+from sklearn.metrics import mean_squared_error, precision_score, roc_auc_score
 
 
 elem_list = ['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na', 'Ca', 'Fe', 'As', 'Al', 'I', 'B', 'V', 'K', 'Tl', 'Yb', 'Sb', 'Sn', 'Ag', 'Pd', 'Co', 'Se', 'Ti', 'Zn', 'H', 'Li', 'Ge', 'Cu', 'Au', 'Ni', 'Cd', 'In', 'Mn', 'Zr', 'Cr', 'Pt', 'Hg', 'Pb', 'W', 'Ru', 'Nb', 'Re', 'Te', 'Rh', 'Tc', 'Ba', 'Bi', 'Hf', 'Mo', 'U', 'Sm', 'Os', 'Ir', 'Ce','Gd','Ga','Cs', 'unknown']
@@ -46,8 +47,10 @@ class Trainer(object):
         self.device = torch.device("cuda")
         self.summary_writer = SummaryWriter(self.args.save_path)
         if self.args.logtofile is True:
-            logging.basicConfig(filename=self.args.save_path + "/log.txt",
-                                filemode="a+", level=logging.INFO)
+            logging.basicConfig(level=logging.INFO,
+                                handlers=[
+                                    logging.FileHandler(self.args.save_path + "/log.txt"),
+                                    logging.StreamHandler()])
         else:
             logging.basicConfig(level=logging.INFO)
 
@@ -103,6 +106,10 @@ class Trainer(object):
             "loss_dev": 0.0,
             "loss_pairwise_dev": 0.0,
             "loss_aff_dev": 0.0,
+            "rmse_dev": 0.0, 
+            "pearson_dev": 0.0,
+            "spearman_dev": 0.0, 
+            "average_pairwise_auc": 0.0,
             "loss_dev_best": float("inf"),
             "loss_pairwise_dev_best": float("inf"),
             "loss_aff_dev_best": float("inf")
@@ -135,11 +142,14 @@ class Trainer(object):
         elif mode == "Dev":
             logging.info(
                 "{}, Dev, Epoch: {}, Step: {}, Loss: {:.3f}, "
-                "PairLoss: {:.3f}, AffLoss: {:.3f}, Runtime: {:.2f} s"
+                "PairLoss: {:.3f}, AffLoss: {:.3f}, RMSE: {:.3f}, "
+                "Pearson: {:3f}, Spearman: {:3f}, AUC: {:.3f}, Runtime: {:.2f} s"
                 .format(time.strftime("%Y-%m-%d %H:%M:%S"),
                         self.summary["epoch"], self.summary["step"],
                         self.summary["loss_dev"], self.summary["loss_pairwise_dev"],
-                        self.summary["loss_aff_dev"], time_elapsed))
+                        self.summary["loss_aff_dev"], self.summary["rmse_dev"], 
+                        self.summary["pearson_dev"], self.summary["spearman_dev"],
+                        self.summary["average_pairwise_auc"], time_elapsed))
 
     def train_step(self):
         try:
@@ -199,6 +209,9 @@ class Trainer(object):
         loss_sum = 0.0
         loss_pairwise_sum = 0.0
         loss_aff_sum = 0.0
+        aff_pred_list = []
+        aff_label_list = []
+        pairwise_auc_list = []
 
         for step in range(steps):
             (vertex_mask, vertex, edge, atom_adj, 
@@ -232,9 +245,35 @@ class Trainer(object):
             loss_pairwise_sum += loss.item()
             loss_aff_sum += loss.item()
 
+
+            for j in range(len(pairwise_mask)):
+                if pairwise_mask[j]:
+                    num_vertex = int(torch.sum(vertex_mask[j,:]))
+                    num_residue = int(torch.sum(seq_mask[j,:]))
+                    pairwise_pred_i = pairwise_pred[j, :num_vertex, :num_residue].cpu().detach().numpy().reshape(-1)
+                    pairwise_label_i = pairwise_label[j].reshape(-1)
+                    if pairwise_label_i.shape == pairwise_pred_i.shape: # Boxiang
+                        pairwise_auc_list.append(roc_auc_score(pairwise_label_i, pairwise_pred_i))
+
+            aff_pred_list += affinity_pred.cpu().detach().numpy().reshape(-1).tolist()
+            aff_label_list += affinity_label.cpu().detech().numpy().reshape(-1).tolist()
+
+
+        aff_pred_list = np.array(aff_pred_list)
+        aff_label_list = np.array(aff_label_list)
+        rmse_value, pearson_value, spearman_value = reg_scores(aff_label_list, aff_pred_list)
+        average_pairwise_auc = np.mean(pairwise_auc_list)
+        
+        dev_performance = [rmse_value, pearson_value, spearman_value, average_pairwise_auc]
+
+
         self.summary["loss_dev"] = loss_sum / steps
         self.summary["loss_pairwise_dev"] = loss_pairwise_sum / steps
         self.summary["loss_aff_dev"] = loss_aff_sum / steps
+        self.summary["rmse_dev"] = rmse_value
+        self.summary["pearson_dev"] = pearson_value
+        self.summary["spearman_dev"] = spearman_value
+        self.summary["average_pairwise_auc"] = average_pairwise_auc
 
         torch.set_grad_enabled(True)
         self.net.train()
@@ -378,5 +417,60 @@ class Masked_BCELoss(nn.Module):
         loss = torch.sum(loss_all*loss_mask) / torch.sum(pairwise_mask).clamp(min=1e-10)
         return loss
 
+
+
+def reg_scores(label, pred):
+    label = label.reshape(-1)
+    pred = pred.reshape(-1)
+    return rmse(label, pred), pearson(label, pred), spearman(label, pred)
+
+
+def rmse(y,f):
+    """
+    Task:    To compute root mean squared error (RMSE)
+
+    Input:   y      Vector with original labels (pKd [M])
+             f      Vector with predicted labels (pKd [M])
+
+    Output:  rmse   RSME
+    """
+
+    rmse = sqrt(((y - f)**2).mean(axis=0))
+
+    return rmse
+
+
+
+
+def pearson(y,f):
+    """
+    Task:    To compute Pearson correlation coefficient
+
+    Input:   y      Vector with original labels (pKd [M])
+             f      Vector with predicted labels (pKd [M])
+
+    Output:  rp     Pearson correlation coefficient
+    """
+
+    rp = np.corrcoef(y, f)[0,1]
+
+    return rp
+
+
+
+
+def spearman(y,f):
+    """
+    Task:    To compute Spearman's rank correlation coefficient
+
+    Input:   y      Vector with original labels (pKd [M])
+             f      Vector with predicted labels (pKd [M])
+
+    Output:  rs     Spearman's rank correlation coefficient
+    """
+
+    rs = stats.spearmanr(y, f)[0]
+
+    return rs
 
 
