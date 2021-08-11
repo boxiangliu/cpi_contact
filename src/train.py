@@ -47,6 +47,9 @@ def run(args):
     with open(args.cfg_file) as f:
         cfg = edict(yaml.full_load(f))
 
+    if not os.path.exists(args.save_path):
+        os.makedirs(args.save_path)
+
     copyfile(args.cfg_file,
              os.path.join(args.save_path, 'cfg.yaml'))
 
