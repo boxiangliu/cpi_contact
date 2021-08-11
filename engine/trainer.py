@@ -42,9 +42,6 @@ class Trainer(object):
         if not os.path.exists(self.args.save_path):
             os.makedirs(self.args.save_path)
 
-        copyfile(self.args.cfg_file,
-                 os.path.join(self.args.save_path, 'cfg.yaml'))
-
         self.device = torch.device("cuda")
         self.summary_writer = SummaryWriter(self.args.save_path)
         if self.args.logtofile is True:
