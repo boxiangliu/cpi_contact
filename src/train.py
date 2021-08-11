@@ -59,8 +59,6 @@ def run(args):
         trainer = Trainer(args, train_data, valid_data, test_data)
 
 
-
-
         epoch_steps_train = len(trainer.train_loader)
         total_steps_train = epoch_steps_train * cfg.TRAIN.EPOCH
         start_step = trainer.summary["step"]
@@ -94,3 +92,4 @@ def main():
     run(args)
 
 
+main()
