@@ -45,3 +45,6 @@ python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.3_MSANet/ --logtofile True
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.4_MSANet/ --logtofile True
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.5_MSANet/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.6_MSANet/ --logtofile True
+
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.3_MONN/ --logtofile True
