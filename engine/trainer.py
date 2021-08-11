@@ -253,6 +253,7 @@ class Trainer(object):
                     num_residue = int(torch.sum(seq_mask[j,:]))
                     pairwise_pred_i = pairwise_pred[j, :num_vertex, :num_residue].cpu().detach().numpy().reshape(-1)
                     pairwise_label_i = pairwise_label[j].reshape(-1)
+                    breakpoint()
                     if pairwise_label_i.shape == pairwise_pred_i.shape: # Boxiang
                         pairwise_auc_list.append(roc_auc_score(pairwise_label_i, pairwise_pred_i))
 

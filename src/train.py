@@ -39,53 +39,53 @@ class DummyArgs(object):
 
 args = DummyArgs()
 
-# def run(args):
-with open(args.cfg_file) as f:
-    cfg = edict(yaml.full_load(f))
+def run(args):
+    with open(args.cfg_file) as f:
+        cfg = edict(yaml.full_load(f))
 
 
-data_pack, train_idx_list, valid_idx_list, test_idx_list = \
-    load_data(processed_dir=cfg.TRAIN.PROCESSED,
-          measure=cfg.TRAIN.MEASURE,
-          setting=cfg.TRAIN.SETTING,
-          clu_thre=cfg.TRAIN.CLU_THRE,
-          n_fold=cfg.TRAIN.N_FOLD)
+    data_pack, train_idx_list, valid_idx_list, test_idx_list = \
+        load_data(processed_dir=cfg.TRAIN.PROCESSED,
+              measure=cfg.TRAIN.MEASURE,
+              setting=cfg.TRAIN.SETTING,
+              clu_thre=cfg.TRAIN.CLU_THRE,
+              n_fold=cfg.TRAIN.N_FOLD)
 
-fold = 0
-train_data = data_from_index(data_pack, train_idx_list[fold])
-valid_data = data_from_index(data_pack, valid_idx_list[fold])
-test_data = data_from_index(data_pack, test_idx_list[fold])
+    for fold in range(len(train_idx_list)):
+        train_data = data_from_index(data_pack, train_idx_list[fold])
+        valid_data = data_from_index(data_pack, valid_idx_list[fold])
+        test_data = data_from_index(data_pack, test_idx_list[fold])
 
-trainer = Trainer(args, train_data, valid_data, test_data)
-
-
+        trainer = Trainer(args, train_data, valid_data, test_data)
 
 
-epoch_steps_train = len(trainer.train_loader)
-total_steps_train = epoch_steps_train * cfg.TRAIN.EPOCH
-start_step = trainer.summary["step"]
 
-for step in range(start_step, total_steps_train):
-    trainer.train_step()
 
-    if (step + 1) % cfg.TRAIN.LOG_EVERY == 0:
-        trainer.logging(mode="Train")
-        trainer.write_summary(mode="Train")
-        trainer.reset_log()
+        epoch_steps_train = len(trainer.train_loader)
+        total_steps_train = epoch_steps_train * cfg.TRAIN.EPOCH
+        start_step = trainer.summary["step"]
 
-    if (step + 1) % cfg.TRAIN.DEV_EVERY == 0:
-        trainer.dev_epoch()
+        for step in range(start_step, total_steps_train):
+            trainer.train_step()
+
+            if (step + 1) % cfg.TRAIN.LOG_EVERY == 0:
+                trainer.logging(mode="Train")
+                trainer.write_summary(mode="Train")
+                trainer.reset_log()
+
+            if (step + 1) % cfg.TRAIN.DEV_EVERY == 0:
+                trainer.dev_epoch()
+                trainer.logging(mode="Dev")
+                trainer.write_summary(mode="Dev")
+                trainer.save_model(mode="Train")
+                trainer.save_model(mode="Dev")
+
+            if (step + 1) % epoch_steps_train == 0:
+                trainer.scheduler.step()
+
+        sys.stderr.write("Finished training fold {}\n".format(fold))
         trainer.logging(mode="Dev")
-        trainer.write_summary(mode="Dev")
-        trainer.save_model(mode="Train")
-        trainer.save_model(mode="Dev")
-
-    if (step + 1) % epoch_steps_train == 0:
-        trainer.scheduler.step()
-
-sys.stderr.write("Finished training\n")
-trainer.logging(mode="Dev")
-trainer.close()
+        trainer.close()
 
 def main():
     args = parser.parse_args()
