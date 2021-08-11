@@ -51,6 +51,7 @@ def run(args):
               clu_thre=cfg.TRAIN.CLU_THRE,
               n_fold=cfg.TRAIN.N_FOLD)
 
+    fold_metrics = []
     for fold in range(len(train_idx_list)):
         train_data = data_from_index(data_pack, train_idx_list[fold])
         valid_data = data_from_index(data_pack, valid_idx_list[fold])
@@ -82,8 +83,16 @@ def run(args):
                 trainer.scheduler.step()
 
         sys.stderr.write("Finished training fold {}\n".format(fold))
+        s_ = trainer.summary 
+        fold_metrics.append([s_["rmse_dev"], s_["pearson_dev"], s_["spearman_dev"], s_["average_pairwise_auc"]])
         trainer.logging(mode="Dev")
         trainer.close()
+
+    sys.stderr.write("All stats: RMSE, Pearson, Spearman, avg pairwise AUC\n")
+    sys.stderr.write("mean: {}\n".format(np.mean(fold_metrics, axis=0)))
+    sys.stderr.write("std: {}\n".format(np.std(fold_metrics, axis=0)))
+
+
 
 def main():
     args = parser.parse_args()

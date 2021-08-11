@@ -3,6 +3,7 @@ TRAIN:
   VALID_DATA: ""
   TEST_DATA: ""
   BATCH_SIZE: 32
+
   EPOCH: 30
   MEASURE: IC50                      # [IC50, KIKD]
   SETTING: new_compound              # [new_compound, new_protein, new_new]
@@ -20,3 +21,10 @@ TRAIN:
   HIDDEN_SIZE_3: 896
   LOG_EVERY: 10
   DEV_EVERY: 93
+SOLVER:
+  LR: 0.0005
+  LR_GAMMA: 0.5
+  LR_STEP_SIZE: 20 
+  MOMENTUM: 0.0
+  WEIGHT_DECAY: 0.0
+  # OPTIMIZER: Adam             # [SGD, Adadelta, Adagrad, Adam, RMSprop] 

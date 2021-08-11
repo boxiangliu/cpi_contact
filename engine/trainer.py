@@ -85,8 +85,13 @@ class Trainer(object):
         self.criterion1 = nn.MSELoss()
         self.criterion2 = Masked_BCELoss()
 
-        self.optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.net.parameters()), lr=0.0005, weight_decay=0, amsgrad=True)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=20, gamma=0.5)
+        self.optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.net.parameters()), 
+                                    lr=self.cfg.SOLVER.LR, 
+                                    weight_decay=self.cfg.SOLVER.WEIGHT_DECAY, 
+                                    amsgrad=True)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, 
+                                                   step_size=self.cfg.SOLVER.LR_STEP_SIZE, 
+                                                   gamma=self.cfg.SOLVER.LR_GAMMA)
 
     def init_data(self):
         self.train_dataset = CPIDataset(self.train_data)
