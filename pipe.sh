@@ -40,3 +40,5 @@ python preprocess/preprocess_and_clustering.py
 # Modeling
 ############
 python model/train.py IC50 new_compound 0.3
+
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/test/ --logtofile

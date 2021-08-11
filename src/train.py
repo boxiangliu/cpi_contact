@@ -31,13 +31,13 @@ parser.add_argument("--logtofile",
                     help="Save log in <save_path>/log.txt if True")
 
 
-class DummyArgs(object):
-    def __init__(self):
-        self.cfg_file = "config/config.yaml"
-        self.save_path = "/mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/test/"
-        self.logtofile = True
+# class DummyArgs(object):
+#     def __init__(self):
+#         self.cfg_file = "config/config.yaml"
+#         self.save_path = "/mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/test/"
+#         self.logtofile = True
 
-args = DummyArgs()
+# args = DummyArgs()
 
 def run(args):
     with open(args.cfg_file) as f:
@@ -89,9 +89,8 @@ def run(args):
 
 def main():
     args = parser.parse_args()
-    if args.verbose is True:
-        print("Arguments:")
-        print(args)
+    print("Arguments:")
+    print(args)
     run(args)
 
 
