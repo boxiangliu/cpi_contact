@@ -256,7 +256,7 @@ class Trainer(object):
                         pairwise_auc_list.append(roc_auc_score(pairwise_label_i, pairwise_pred_i))
 
             aff_pred_list += affinity_pred.cpu().detach().numpy().reshape(-1).tolist()
-            aff_label_list += affinity_label.cpu().detech().numpy().reshape(-1).tolist()
+            aff_label_list += affinity_label.cpu().detach().numpy().reshape(-1).tolist()
 
 
         aff_pred_list = np.array(aff_pred_list)
