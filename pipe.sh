@@ -43,3 +43,8 @@ python model/train.py IC50 new_compound 0.3
 
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/test1/ --logtofile True
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.3_MSANet/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.4_MSANet/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.5_MSANet/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.6_MSANet/ --logtofile True
+
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.3_MONN/ --logtofile True

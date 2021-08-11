@@ -26,8 +26,9 @@ atom_fdim = len(elem_list) + 6 + 6 + 6 + 1
 bond_fdim = 6
 
 class Trainer(object):
-    def __init__(self, args, train_data, valid_data, test_data):
+    def __init__(self, args, cfg, train_data, valid_data, test_data):
         self.args = args
+        self.cfg = cfg
         self.train_data = train_data
         self.valid_data = valid_data
         self.test_data = test_data
@@ -38,9 +39,6 @@ class Trainer(object):
         self.init_log()
 
     def setup(self):
-        with open(self.args.cfg_file) as f:
-            self.cfg = edict(yaml.full_load(f))
-
         if not os.path.exists(self.args.save_path):
             os.makedirs(self.args.save_path)
 
