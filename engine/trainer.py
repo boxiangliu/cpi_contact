@@ -9,7 +9,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 sys.path.append(os.getcwd() + "/model/")
-from model import Net
+from model import MSANet, MONN
 import math
 from torch.utils.data import Dataset, DataLoader
 import time
@@ -19,7 +19,7 @@ from data.dataset import CPIDataset, collate_cpi
 import logging
 from sklearn.metrics import mean_squared_error, precision_score, roc_auc_score
 from scipy import stats
-
+from shutil import copyfile
 
 elem_list = ['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na', 'Ca', 'Fe', 'As', 'Al', 'I', 'B', 'V', 'K', 'Tl', 'Yb', 'Sb', 'Sn', 'Ag', 'Pd', 'Co', 'Se', 'Ti', 'Zn', 'H', 'Li', 'Ge', 'Cu', 'Au', 'Ni', 'Cd', 'In', 'Mn', 'Zr', 'Cr', 'Pt', 'Hg', 'Pb', 'W', 'Ru', 'Nb', 'Re', 'Te', 'Rh', 'Tc', 'Ba', 'Bi', 'Hf', 'Mo', 'U', 'Sm', 'Os', 'Ir', 'Ce','Gd','Ga','Cs', 'unknown']
 atom_fdim = len(elem_list) + 6 + 6 + 6 + 1
@@ -44,6 +44,9 @@ class Trainer(object):
 
         if not os.path.exists(self.args.save_path):
             os.makedirs(self.args.save_path)
+
+        copyfile(self.args.cfg_file,
+                 os.path.join(self.args.save_path, 'cfg.yaml'))
 
         self.device = torch.device("cuda")
         self.summary_writer = SummaryWriter(self.args.save_path)
@@ -77,7 +80,13 @@ class Trainer(object):
                   train_cfg.HIDDEN_SIZE_2,
                   train_cfg.HIDDEN_SIZE_3]
 
-        self.net = Net(init_A, init_B, init_W, params).to(self.device)
+        if self.cfg.MODEL == "MSANet":
+            self.net = MSANet(init_A, init_B, init_W, params).to(self.device)
+        elif self.cfg.MODEL == "MONN":
+            self.net = MONN(init_A, init_B, init_W, params).to(self.device)
+        else:
+            raise ValueError("{} has not been implemented.".format(self.cfg.MODEL))
+
         self.net.apply(weights_init)
         total_params = sum(p.numel() for p in self.net.parameters() if p.requires_grad)
         sys.stderr.write("Total parameters: {}\n".format(total_params))
