@@ -20,7 +20,7 @@ max_nb = 6
 #define the model
 class MSANet(nn.Module):
     def __init__(self, init_atom_features, init_bond_features, init_word_features, params):
-        super(Net, self).__init__()
+        super(MSANet, self).__init__()
         
         self.init_atom_features = init_atom_features
         self.init_bond_features = init_bond_features
@@ -266,7 +266,7 @@ class MSANet(nn.Module):
 # Original MONN model:
 class MONN(nn.Module):
     def __init__(self, init_atom_features, init_bond_features, init_word_features, params):
-        super(Net, self).__init__()
+        super(MONN, self).__init__()
 
         self.init_atom_features = init_atom_features
         self.init_bond_features = init_bond_features
