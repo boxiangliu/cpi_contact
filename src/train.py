@@ -8,6 +8,7 @@ from easydict import EasyDict as edict
 import torch
 import random 
 import numpy as np
+from shutil import copyfile
 
 parser = argparse.ArgumentParser(description="Train model")
 parser.add_argument("cfg_file",
