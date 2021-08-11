@@ -5,6 +5,9 @@ from data.dataset import load_data, data_from_index
 from engine.trainer import Trainer
 import yaml
 from easydict import EasyDict as edict
+import torch
+import random 
+import numpy as np
 
 parser = argparse.ArgumentParser(description="Train model")
 parser.add_argument("cfg_file",
@@ -95,6 +98,9 @@ def run(args):
 
 
 def main():
+    torch.manual_seed(0)
+    random.seed(0)
+    np.random.seed(0)
     args = parser.parse_args()
     print("Arguments:")
     print(args)
