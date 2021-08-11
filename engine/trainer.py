@@ -435,7 +435,7 @@ def rmse(y,f):
     Output:  rmse   RSME
     """
 
-    rmse = sqrt(((y - f)**2).mean(axis=0))
+    rmse = math.sqrt(((y - f)**2).mean(axis=0))
 
     return rmse
 
