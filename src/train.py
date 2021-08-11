@@ -60,7 +60,7 @@ def run(args):
         valid_data = data_from_index(data_pack, valid_idx_list[fold])
         test_data = data_from_index(data_pack, test_idx_list[fold])
 
-        trainer = Trainer(args, train_data, valid_data, test_data)
+        trainer = Trainer(args, cfg, train_data, valid_data, test_data)
 
 
         epoch_steps_train = len(trainer.train_loader)
