@@ -46,6 +46,8 @@ def run(args):
     with open(args.cfg_file) as f:
         cfg = edict(yaml.full_load(f))
 
+    copyfile(args.cfg_file,
+             os.path.join(args.save_path, 'cfg.yaml'))
 
     data_pack, train_idx_list, valid_idx_list, test_idx_list = \
         load_data(processed_dir=cfg.TRAIN.PROCESSED,
