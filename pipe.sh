@@ -35,6 +35,10 @@ bash preprocess/get_alignment_score.sh
 python preprocess/preprocess_and_clustering.py
 
 
+############## 
+# Alphafold 2
+##############
+python preprocess/AF2/unique_fasta.py ../processed_data/MSA/ ../processed_data/unique_fasta/
 
 ############
 # Modeling
