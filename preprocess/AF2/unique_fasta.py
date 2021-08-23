@@ -5,7 +5,7 @@ import os
 
 msa_dir = sys.argv[1]
 uniq_dir = sys.argv[2]
-if os.path.exists(uniq_dir):
+if not os.path.exists(uniq_dir):
     os.mkdirs(uniq_dir)
 
 uniprot_list = []
