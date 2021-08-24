@@ -3,5 +3,7 @@ partition="1080Ti,1080Ti_mlong,1080Ti_short,1080Ti_slong,2080Ti,2080Ti_mlong,CPU
 for file in /mnt/scratch/boxiang/projects/cpi_contact/processed_data/unique_fasta/*fasta; do
     base=$(basename $file \.fasta)
     echo $base
-    sbatch --ntasks=1 --cpus-per-task=8 --partition=$partition --job-name=$base --wrap "bash /mnt/scratch/boxiang/projects/cpi_contact/scripts/preprocess/AF2/run_alphafold2.sh $file /mnt/scratch/boxiang/projects/cpi_contact/processed_data/AF2/" --output=/mnt/scratch/boxiang/projects/cpi_contact/processed_data/AF2/${base}.out
+    if [[ ! -f /mnt/scratch/boxiang/projects/cpi_contact/processed_data/AF2/$base ]]; then 
+        sbatch --ntasks=1 --cpus-per-task=8 --partition=$partition --job-name=$base --wrap "bash /mnt/scratch/boxiang/projects/cpi_contact/scripts/preprocess/AF2/run_alphafold2.sh $file /mnt/scratch/boxiang/projects/cpi_contact/processed_data/AF2/" --output=/mnt/scratch/boxiang/projects/cpi_contact/processed_data/AF2/${base}.out
+    fi
 done

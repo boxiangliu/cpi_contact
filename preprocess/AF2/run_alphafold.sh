@@ -1,7 +1,8 @@
 in_fasta=$1
 out_dir=$2
+cd /mnt/scratch/boxiang/projects/alphafold
 
-python /mnt/scratch/boxiang/projects/alphafold/run_alphafold.py \
+python run_alphafold.py \
 --fasta_paths=$in_fasta \
 --output_dir=$out_dir \
 --model_names=model_1 \
