@@ -4,9 +4,10 @@ n=0
 for file in /mnt/storage/idl-0/bio/boxiang/cpi_contact/processed_data/unique_fasta/*fasta; do
     base=$(basename $file .fasta)
     echo $base
-    n=$((n+1))
+
 
     if [[ ! -d /mnt/storage/idl-0/bio/boxiang/cpi_contact/processed_data/AF2/$base ]]; then
+        n=$((n+1))
         if [[ n -ge 1500 ]]; then 
             echo "Max number of tasks reached"
             echo $n
