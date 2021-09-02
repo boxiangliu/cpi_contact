@@ -4,27 +4,28 @@ PDBBIND:
 
 PDB:
     # Chemical component coordinate data file downloaded from http://ligand-expo.rcsb.org/ld-download.html
-    COORDINATE: /mnt/scratch/boxiang/projects/cpi_contact/data/Components-pub.sdf
+    COORDINATE: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/Components-pub.sdf
     # Mol_dict saved in pickle format:
-    MOL_DICT: /mnt/scratch/boxiang/projects/cpi_contact/data/mol_dict
+    MOL_DICT: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/mol_dict
 
 DATA:
     # Working directory
-    WD: /mnt/scratch/boxiang/projects/cpi_contact/data/results/
+    WD: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/results/
     # Preprocessed data:
-    PREPROCESSED: /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/
+    PREPROCESSED: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/preprocessed/
     # Path to PDB files:
-    PDB: /mnt/scratch/boxiang/projects/cpi_contact/data/pdb_files/
+    PDB: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/pdb_files/
     # Path to PLIP results:
-    PLIP: /mnt/scratch/boxiang/projects/cpi_contact/data/plip_results/
+    PLIP: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/plip_results/
     # Path to MSA:
-    MSA: /mnt/scratch/boxiang/projects/cpi_contact/data/MSA/
+    MSA: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/MSA/
     # Path to MSA features:
-    MSA_FEATURES: /mnt/scratch/boxiang/projects/cpi_contact/processed_data/MSA_features/
-
+    MSA_FEATURES: /mnt/storage/idl-0/bio/boxiang/cpi_contact/processed_data/MSA_features/
+    # Path to AF2 features:
+    AF2: /mnt/storage/idl-0/bio/boxiang/cpi_contact/processed_data/AF2/
 SRC:
     # Path to Smith-Waterman alignment source code
-    SW: /mnt/scratch/boxiang/projects/cpi_contact/scripts/dataset/smith-waterman-src/
+    SW: /mnt/storage/idl-0/bio/boxiang/cpi_contact/scripts/dataset/smith-waterman-src/
 
 HHBLITS:
     # Path to HHBlits database

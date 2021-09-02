@@ -17,8 +17,9 @@ def pickle_dump(dictionary, file_name):
 
 
 class Preprocessor(DataUtils):
-    def __init__(self, config_fn, measure="IC50", debug=False):
+    def __init__(self, config_fn, measure="IC50", msa_mode="ESM", debug=False):
         super(Preprocessor, self).__init__(config_fn)
+        self.msa_mode = msa_mode
         self.debug = debug
         self.max_nb = 6
         self.word_dict = self.get_word_dict()
@@ -241,19 +242,30 @@ class Preprocessor(DataUtils):
         self.mol_inputs, self.seq_inputs = [], []
         self.msa_features_dict = {}
         self.msa_features = []
-        msa_feature_dir = self.config["DATA"]["MSA_FEATURES"]
         n_msa_feature_not_found = 0
 
         pid_list = [pair_info_dict[k][2] for k in pair_info_dict]
         if self.debug: 
             pid_list = pid_list[:20]
-        for pid in tqdm(set(pid_list)):
-            msa_feature_fn = os.path.join(msa_feature_dir, pid + ".pt")
-            if not os.path.exists(msa_feature_fn):
-                continue
-            msa_feature = torch.load(msa_feature_fn)
-            # dimension: B x MSA x SEQ x HIDDEN
-            self.msa_features_dict[pid] = msa_feature["representations"][0,0,1:,:].detach().numpy()
+        if self.msa_mode == "ESM":
+            msa_feature_dir = self.config["DATA"]["MSA_FEATURES"]
+            for pid in tqdm(set(pid_list)):
+                msa_feature_fn = os.path.join(msa_feature_dir, pid + ".pt")
+                if not os.path.exists(msa_feature_fn):
+                    continue
+                msa_feature = torch.load(msa_feature_fn)
+                # dimension: B x MSA x SEQ x HIDDEN
+                self.msa_features_dict[pid] = msa_feature["representations"][0,0,1:,:].detach().numpy()
+
+        elif self.msa_mode == "AF2":
+            msa_features_dir = self.config["DATA"]["AF2"]
+            for pid in tqdm(set(pid_list)):
+                msa_features_fn = os.path.join(msa_feature_dir, pid, "result_model_1.pkl")
+                if not os.path.exists(msa_feature_fn):
+                    continue
+                with open(msa_feature_fn, "rb") as f:
+                    msa_feature = pickle.load(f)
+                self.msa_features_dict[pid] = msa_feature["representations"]["msa_first_row"]
 
         # get inputs
         for item in tqdm(pair_info_dict):
