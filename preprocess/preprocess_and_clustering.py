@@ -315,7 +315,11 @@ class Preprocessor(DataUtils):
         msa_features = self.msa_features
         msa_features_dict = self.msa_features_dict
         MEASURE = self.MEASURE
-        preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
+        if self.msa_mode == "ESM":
+            preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
+        elif self.msa_mode == "AF2":
+            preprocessed_dir = self.config["DATA"]["PREPROCESSED_AF2"]
+
         if not os.path.exists(preprocessed_dir):
             os.makedirs(preprocessed_dir)
 

@@ -32,8 +32,8 @@ bash preprocess/MSA/extract_msa_features.sh
 bash preprocess/get_alignment_score.sh
 
 # Final processing and clustering for train-dev-test split:
-python preprocess/preprocess_and_clustering.py
-
+python preprocess/preprocess_and_clustering.py IC50 ESM
+python preprocess/preprocess_and_clustering.py IC50 AF2
 
 ############## 
 # Alphafold 2

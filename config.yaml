@@ -13,6 +13,7 @@ DATA:
     WD: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/results/
     # Preprocessed data:
     PREPROCESSED: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/preprocessed/
+    PREPROCESSED_AF2: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/preprocessed_af2/
     # Path to PDB files:
     PDB: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/pdb_files/
     # Path to PLIP results:
