@@ -427,3 +427,5 @@ class Preprocessor(DataUtils):
 def main():
     args = parser.parse_args()
     preprocessor = Preprocessor(config_fn, measure=args.measure, msa_mode=args.msa_mode, debug=False)
+
+main()
