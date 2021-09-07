@@ -270,7 +270,7 @@ class Preprocessor(DataUtils):
         elif self.msa_mode == "AF2":
             msa_feature_dir = self.config["DATA"]["AF2"]
             for pid in tqdm(set(pid_list)):
-                msa_features_fn = os.path.join(msa_feature_dir, pid, "result_model_1.pkl")
+                msa_feature_fn = os.path.join(msa_feature_dir, pid, "result_model_1.pkl")
                 if not os.path.exists(msa_feature_fn):
                     continue
                 with open(msa_feature_fn, "rb") as f:
