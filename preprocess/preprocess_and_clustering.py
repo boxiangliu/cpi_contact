@@ -11,6 +11,16 @@ from scipy.cluster.hierarchy import fcluster, linkage, single
 from scipy.spatial.distance import pdist
 import torch
 from tqdm import tqdm
+import argparse
+
+parser = argparse.ArgumentParser(description="Process and clustering")
+parser.add_argument("measure",
+                    type=str,
+                    help="one of IC50 or KIKD")
+parser.add_argument("msa_mode",
+                    type=str,
+                    help="one of ESM or AF2")
+
 
 def pickle_dump(dictionary, file_name):
     pickle.dump(dict(dictionary), open(file_name, 'wb'), protocol=0)
@@ -245,7 +255,7 @@ class Preprocessor(DataUtils):
         n_msa_feature_not_found = 0
 
         pid_list = [pair_info_dict[k][2] for k in pair_info_dict]
-        if self.debug: 
+        if self.debug:
             pid_list = pid_list[:20]
         if self.msa_mode == "ESM":
             msa_feature_dir = self.config["DATA"]["MSA_FEATURES"]
@@ -265,7 +275,7 @@ class Preprocessor(DataUtils):
                     continue
                 with open(msa_feature_fn, "rb") as f:
                     msa_feature = pickle.load(f)
-                self.msa_features_dict[pid] = msa_feature["representations"]["msa_first_row"]
+                self.msa_features_dict[pid] = msa_feature["representations"]["msa_first_row"] 
 
         # get inputs
         for item in tqdm(pair_info_dict):
@@ -410,4 +420,6 @@ class Preprocessor(DataUtils):
         self.protein_clustering(protein_list)
 
 
-preprocessor = Preprocessor(config_fn, debug=False)
+def main():
+    args = parser.parse_args()
+    preprocessor = Preprocessor(config_fn, measure=args.measure, msa_mode=args.msa_mode, debug=False)
