@@ -16,11 +16,11 @@ TRAIN:
   K_HEAD: 2
   KERNEL_SIZE: 7
   HIDDEN_SIZE_1: 128
-  HIDDEN_SIZE_2: 128 
+  HIDDEN_SIZE_2: 128
   HIDDEN_SIZE_3: 384
   LOG_EVERY: 10
   DEV_EVERY: 93
-MODEL: MONN                       # [MSANet, MONN]
+MODEL: MSANet                       # [MSANet, MONN]
 SOLVER:
   LR: 0.0005
   LR_GAMMA: 0.5
