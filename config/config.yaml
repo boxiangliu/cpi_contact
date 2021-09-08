@@ -20,7 +20,7 @@ TRAIN:
   HIDDEN_SIZE_3: 384
   LOG_EVERY: 10
   DEV_EVERY: 93
-MODEL: MSANet                       # [MSANet, MONN]
+MODEL: MONN                       # [MSANet, MONN]
 SOLVER:
   LR: 0.0005
   LR_GAMMA: 0.5
