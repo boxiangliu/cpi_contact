@@ -45,9 +45,9 @@ bash preprocess/AF2/submit_slurm.sh
 ############
 # Modeling
 ############
-python model/train.py IC50 new_compound 0.3
+# python model/train.py IC50 new_compound 0.3
 
-python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/test1/ --logtofile True
+# Using MSA transformer embeddings
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.3_MSANet/ --logtofile True
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.4_MSANet/ --logtofile True
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.5_MSANet/ --logtofile True
@@ -57,3 +57,15 @@ python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.4_MONN/ --logtofile True
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.5_MONN/ --logtofile True
 python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed/models/new_cpd_thre_0.6_MONN/ --logtofile True
+
+
+# Using MSA transformer embeddings
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed_af2/models/new_cpd_thre_0.3_AF2/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed_af2/models/new_cpd_thre_0.4_AF2/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed_af2/models/new_cpd_thre_0.5_AF2/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed_af2/models/new_cpd_thre_0.6_AF2/ --logtofile True
+
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed_af2/models/new_cpd_thre_0.3_MONN/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed_af2/models/new_cpd_thre_0.4_MONN/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed_af2/models/new_cpd_thre_0.5_MONN/ --logtofile True
+python src/train.py config/config.yaml /mnt/scratch/boxiang/projects/cpi_contact/data/preprocessed_af2/models/new_cpd_thre_0.6_MONN/ --logtofile True
