@@ -6,7 +6,7 @@ TRAIN:
   EPOCH: 30
   MEASURE: IC50                      # [IC50, KIKD]
   SETTING: new_compound              # [new_compound, new_protein, new_new]
-  CLU_THRE: 0.4                      # [0.3, 0.4, 0.5, 0.6] 
+  CLU_THRE: 0.5                      # [0.3, 0.4, 0.5, 0.6] 
   N_FOLD: 5                          # Cross validation
   PROCESSED: /mnt/storage/idl-0/bio/boxiang/cpi_contact/data/preprocessed_af2/
   BLOSUM62: /mnt/storage/idl-0/bio/boxiang/cpi_contact/scripts/blosum62.txt
