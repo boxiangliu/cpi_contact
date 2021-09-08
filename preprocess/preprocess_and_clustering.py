@@ -364,7 +364,10 @@ class Preprocessor(DataUtils):
         fps = self.get_fps(mol_list)
         sim_mat = self.calculate_sims(fps, fps)
         sys.stderr.write(f'compound sim mat: {sim_mat.shape}\n')
-        preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
+        if self.msa_mode == "ESM":
+            preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
+        elif self.msa_mode == "AF2":
+            preprocessed_dir = self.config["DATA"]["PREPROCESSED_AF2"]
 
         C_dist = pdist(fps, 'jaccard')
         C_link = single(C_dist)
@@ -380,7 +383,11 @@ class Preprocessor(DataUtils):
 
 
     def protein_clustering(self, protein_list):
-        preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
+        if self.msa_mode == "ESM":
+            preprocessed_dir = self.config["DATA"]["PREPROCESSED"]
+        elif self.msa_mode == "AF2":
+            preprocessed_dir = self.config["DATA"]["PREPROCESSED_AF2"]
+
         alignment_score_fn = os.path.join(self.config["DATA"]["WD"], "alignment_scores.pkl")
         with open(alignment_score_fn, "rb") as f:
             alignment_score = pickle.load(f)
